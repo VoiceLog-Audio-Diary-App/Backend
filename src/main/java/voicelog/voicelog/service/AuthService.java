@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import voicelog.voicelog.domain.EmailCertification;
+import voicelog.voicelog.dto.request.CertificationCheckRequestDto;
 import voicelog.voicelog.dto.request.EmailCertificationRequestDto;
 import voicelog.voicelog.dto.request.EmailCheckRequestDto;
+import voicelog.voicelog.dto.response.CertificationCheckResponseDto;
 import voicelog.voicelog.dto.response.EmailCertificationResponseDto;
 import voicelog.voicelog.dto.response.EmailCheckResponseDto;
 import voicelog.voicelog.provider.EmailProvider;
@@ -137,5 +139,27 @@ public class AuthService {
             return ResponseDto.databaseError();
         }
         return EmailCertificationResponseDto.success();
+    }
+
+    //인증번호 확인
+    public ResponseEntity<? super CertificationCheckResponseDto> certificationCheck(CertificationCheckRequestDto dto) {
+        try {
+            String email = dto.getEmail();
+            String certificationNumber = dto.getCertificationNumber();
+
+            EmailCertification emailCertification = emailCertificationRepository.findByEmail(email);
+
+            if (emailCertification == null)
+                return CertificationCheckResponseDto.certificationFail();
+
+            boolean isMatched = emailCertification.getEmail().equals(email) && emailCertification.getCertificationNumber().equals(certificationNumber);
+
+            if (!isMatched)
+                return CertificationCheckResponseDto.certificationFail();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return CertificationCheckResponseDto.success();
     }
 }

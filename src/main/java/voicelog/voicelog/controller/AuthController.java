@@ -2,8 +2,10 @@ package voicelog.voicelog.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import voicelog.voicelog.dto.request.CertificationCheckRequestDto;
 import voicelog.voicelog.dto.request.EmailCertificationRequestDto;
 import voicelog.voicelog.dto.request.EmailCheckRequestDto;
+import voicelog.voicelog.dto.response.CertificationCheckResponseDto;
 import voicelog.voicelog.dto.response.EmailCertificationResponseDto;
 import voicelog.voicelog.dto.response.EmailCheckResponseDto;
 import voicelog.voicelog.service.AuthService;
@@ -31,6 +33,13 @@ public class AuthController {
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(
             @RequestBody @Valid EmailCertificationRequestDto requestBody) {
         ResponseEntity<? super EmailCertificationResponseDto> response = authService.emailCertification(requestBody);
+        return response;
+    }
+
+    @PostMapping("/certification-check")
+    public ResponseEntity<? super CertificationCheckResponseDto> certificationCheck(
+            @RequestBody @Valid CertificationCheckRequestDto requestBody) {
+        ResponseEntity<? super CertificationCheckResponseDto> response = authService.certificationCheck(requestBody);
         return response;
     }
 
