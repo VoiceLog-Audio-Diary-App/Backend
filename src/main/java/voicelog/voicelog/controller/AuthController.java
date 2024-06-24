@@ -2,7 +2,10 @@ package voicelog.voicelog.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import voicelog.voicelog.dto.request.EmailRequestDto;
+import voicelog.voicelog.dto.request.EmailCertificationRequestDto;
+import voicelog.voicelog.dto.request.EmailCheckRequestDto;
+import voicelog.voicelog.dto.response.EmailCertificationResponseDto;
+import voicelog.voicelog.dto.response.EmailCheckResponseDto;
 import voicelog.voicelog.service.AuthService;
 import voicelog.voicelog.common.ResponseCode;
 import voicelog.voicelog.dto.request.SignUpRequestDto;
@@ -16,7 +19,20 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
-    private String certificationNumber;
+
+    @PostMapping("/email-check")
+    public ResponseEntity<? super EmailCheckResponseDto> emailCheck(
+            @RequestBody @Valid EmailCheckRequestDto requestBody) {
+        ResponseEntity<? super EmailCheckResponseDto> response = authService.emailCheck(requestBody);
+        return response;
+    }
+
+    @PostMapping("/email-certification")
+    public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(
+            @RequestBody @Valid EmailCertificationRequestDto requestBody) {
+        ResponseEntity<? super EmailCertificationResponseDto> response = authService.emailCertification(requestBody);
+        return response;
+    }
 
     @PostMapping("/sign-up")
     public ResponseEntity<ResponseDto> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
@@ -28,8 +44,10 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/mailSend")
-    public HashMap<String, Object> mailSend(@Valid @RequestBody EmailRequestDto emailDto) {
+
+
+    /*@PostMapping("/mailSend")
+    public HashMap<String, Object> mailSend(@Valid @RequestBody EmailCertificationRequestDto emailDto) {
         HashMap<String, Object> map = new HashMap<>();
 
         try {
@@ -49,5 +67,7 @@ public class AuthController {
 
         boolean isMatch = authService.checkVerificationNumber(mail, userNumber);
         return ResponseEntity.ok(isMatch);
-    }
+    }*/
+
+
 }

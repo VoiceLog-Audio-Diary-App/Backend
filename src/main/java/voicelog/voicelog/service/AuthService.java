@@ -2,11 +2,16 @@ package voicelog.voicelog.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
-import voicelog.voicelog.dto.request.EmailRequestDto;
+import voicelog.voicelog.domain.EmailCertification;
+import voicelog.voicelog.dto.request.EmailCertificationRequestDto;
+import voicelog.voicelog.dto.request.EmailCheckRequestDto;
+import voicelog.voicelog.dto.response.EmailCertificationResponseDto;
+import voicelog.voicelog.dto.response.EmailCheckResponseDto;
 import voicelog.voicelog.provider.EmailProvider;
+import voicelog.voicelog.repository.EmailCertificationRepository;
 import voicelog.voicelog.repository.UserRepository;
 import voicelog.voicelog.common.ResponseCode;
 import voicelog.voicelog.common.ResponseMessage;
@@ -30,6 +35,9 @@ public class AuthService {
     private final JavaMailSender javaMailSender;
     private static final String senderEmail= "lsj90954511@gmail.com";
 
+    private final EmailProvider emailProvider;
+    private final EmailCertificationRepository emailCertificationRepository;
+
     private final Map<String, String> emailVerificationMap = new HashMap<>();
 
     // 6자리 인증코드 생성
@@ -40,8 +48,8 @@ public class AuthService {
         return String.format("%06d", number);
     }
 
-    @Async
-    public void sendMail(EmailRequestDto emailDto) {
+    /*@Async
+    public void sendMail(EmailCertificationRequestDto emailDto) {
         String certificationNumber = generateValidationCode();
         MimeMessage message = javaMailSender.createMimeMessage();
 
@@ -70,7 +78,7 @@ public class AuthService {
     public boolean checkVerificationNumber(String mail, String userNumber) {
         String storedNumber = getVerificationNumber(mail);
         return storedNumber.equals(userNumber);
-    }
+    }*/
 
     public ResponseDto signUp(SignUpRequestDto dto) {
         if (userRepository.existsByUsername(dto.getEmail())) {
@@ -84,10 +92,50 @@ public class AuthService {
         User user = new User(dto);
 
         try{
+
             userRepository.save(user);
         } catch (Exception e) {
             return new ResponseDto(ResponseCode.DATABASE_ERROR, ResponseMessage.DATABASE_ERROR);
         }
         return new ResponseDto(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
+    }
+
+    //이메일 중복 체크
+    public ResponseEntity<? super EmailCheckResponseDto> emailCheck(EmailCheckRequestDto dto) {
+        try {
+            String email = dto.getEmail();
+            boolean isExist = userRepository.existsByUsername(email);
+            if (isExist)
+                return EmailCheckResponseDto.duplicatedEmail();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return EmailCheckResponseDto.success();
+    }
+
+    //이메일 보내기
+    public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(EmailCertificationRequestDto dto) {
+        try {
+            String email = dto.getEmail();
+            boolean isExist = userRepository.existsByUsername(email);
+            if (isExist)
+                return EmailCheckResponseDto.duplicatedEmail();
+
+            String certificationNumber = generateValidationCode();
+
+            boolean isSuccess = emailProvider.sendCertificationMail(email, certificationNumber);
+
+            if (!isSuccess)
+                return EmailCertificationResponseDto.mailSendFail();
+
+            EmailCertification emailCertification = new EmailCertification(email, certificationNumber);
+            emailCertificationRepository.save(emailCertification);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return EmailCertificationResponseDto.success();
     }
 }
