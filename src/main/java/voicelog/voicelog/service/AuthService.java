@@ -9,9 +9,7 @@ import voicelog.voicelog.domain.EmailCertification;
 import voicelog.voicelog.dto.request.CertificationCheckRequestDto;
 import voicelog.voicelog.dto.request.EmailCertificationRequestDto;
 import voicelog.voicelog.dto.request.EmailCheckRequestDto;
-import voicelog.voicelog.dto.response.CertificationCheckResponseDto;
-import voicelog.voicelog.dto.response.EmailCertificationResponseDto;
-import voicelog.voicelog.dto.response.EmailCheckResponseDto;
+import voicelog.voicelog.dto.response.*;
 import voicelog.voicelog.provider.EmailProvider;
 import voicelog.voicelog.repository.EmailCertificationRepository;
 import voicelog.voicelog.repository.UserRepository;
@@ -19,7 +17,6 @@ import voicelog.voicelog.common.ResponseCode;
 import voicelog.voicelog.common.ResponseMessage;
 import voicelog.voicelog.domain.User;
 import voicelog.voicelog.dto.request.SignUpRequestDto;
-import voicelog.voicelog.dto.response.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -82,7 +79,7 @@ public class AuthService {
         return storedNumber.equals(userNumber);
     }*/
 
-    public ResponseDto signUp(SignUpRequestDto dto) {
+    /*public ResponseDto signUp(SignUpRequestDto dto) {
         if (userRepository.existsByUsername(dto.getEmail())) {
             return new ResponseDto(ResponseCode.DUPLICATE_EMAIL, ResponseMessage.DUPLICATE_EMAIL);
         }
@@ -100,6 +97,36 @@ public class AuthService {
             return new ResponseDto(ResponseCode.DATABASE_ERROR, ResponseMessage.DATABASE_ERROR);
         }
         return new ResponseDto(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
+    }*/
+    //회원가입
+    public ResponseEntity<? super SignUpResponseDto> signUp(SignUpRequestDto dto) {
+        try {
+            String email = dto.getEmail();
+            String certificationNumber = dto.getCertificationNumber();
+
+            boolean isExist = userRepository.existsByUsername(email);
+            if (isExist)
+                return SignUpResponseDto.duplicatedEmail();
+
+            EmailCertification emailCertification = emailCertificationRepository.findByEmail(email);
+            boolean isMatched = emailCertification.getEmail().equals(email) && emailCertification.getCertificationNumber().equals(certificationNumber);
+
+            if (!isMatched)
+                return SignUpResponseDto.certificationFail();
+
+            String password = dto.getPassword();
+            password = passwordEncoder.encode(password);
+            dto.setPassword(password);
+
+            User user = new User(dto);
+            userRepository.save(user);
+
+            emailCertificationRepository.deleteByEmail(email);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return SignUpResponseDto.success();
     }
 
     //이메일 중복 체크

@@ -22,4 +22,7 @@ public class SignUpRequestDto {
 
     @NotNull
     private String name;
+
+    @NotBlank
+    private String certificationNumber;
 }

@@ -5,13 +5,10 @@ import org.springframework.web.bind.annotation.*;
 import voicelog.voicelog.dto.request.CertificationCheckRequestDto;
 import voicelog.voicelog.dto.request.EmailCertificationRequestDto;
 import voicelog.voicelog.dto.request.EmailCheckRequestDto;
-import voicelog.voicelog.dto.response.CertificationCheckResponseDto;
-import voicelog.voicelog.dto.response.EmailCertificationResponseDto;
-import voicelog.voicelog.dto.response.EmailCheckResponseDto;
+import voicelog.voicelog.dto.response.*;
 import voicelog.voicelog.service.AuthService;
 import voicelog.voicelog.common.ResponseCode;
 import voicelog.voicelog.dto.request.SignUpRequestDto;
-import voicelog.voicelog.dto.response.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
@@ -44,6 +41,13 @@ public class AuthController {
     }
 
     @PostMapping("/sign-up")
+    public ResponseEntity<? super SignUpResponseDto> signUp(
+            @RequestBody @Valid SignUpRequestDto requestBody) {
+        ResponseEntity<? super SignUpResponseDto> response = authService.signUp(requestBody);
+        return response;
+    }
+
+    /*@PostMapping("/sign-up")
     public ResponseEntity<ResponseDto> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
         ResponseDto response = authService.signUp(signUpRequestDto);
         if (ResponseCode.SUCCESS.equals(response.getResponseCode())) {
@@ -51,7 +55,7 @@ public class AuthController {
         } else {
             return ResponseEntity.badRequest().body(response);
         }
-    }
+    }*/
 
 
 
