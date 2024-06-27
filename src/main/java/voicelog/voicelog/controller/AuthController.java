@@ -2,13 +2,10 @@ package voicelog.voicelog.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import voicelog.voicelog.dto.request.CertificationCheckRequestDto;
-import voicelog.voicelog.dto.request.EmailCertificationRequestDto;
-import voicelog.voicelog.dto.request.EmailCheckRequestDto;
+import voicelog.voicelog.dto.request.*;
 import voicelog.voicelog.dto.response.*;
 import voicelog.voicelog.service.AuthService;
 import voicelog.voicelog.common.ResponseCode;
-import voicelog.voicelog.dto.request.SignUpRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
@@ -16,6 +13,7 @@ import java.util.HashMap;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/auth")
 public class AuthController {
     private final AuthService authService;
 
@@ -44,6 +42,13 @@ public class AuthController {
     public ResponseEntity<? super SignUpResponseDto> signUp(
             @RequestBody @Valid SignUpRequestDto requestBody) {
         ResponseEntity<? super SignUpResponseDto> response = authService.signUp(requestBody);
+        return response;
+    }
+
+    @PostMapping("/sign-in")
+    public ResponseEntity<? super SignInResponseDto> signUp(
+            @RequestBody @Valid SignInRequestDto requestBody) {
+        ResponseEntity<? super SignInResponseDto> response = authService.signIn(requestBody);
         return response;
     }
 

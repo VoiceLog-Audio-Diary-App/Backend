@@ -9,6 +9,9 @@ public interface ResponseMessage {
     String MAIL_FAIL = "mail send failed";
     String CERTIFICATE_FAIL = "certification failed";
 
+    //HTTP 401
+    String SIGN_IN_FAIL = "Login information mismatch";
+
     //HTTP 500
     String DATABASE_ERROR = "database error";
 

@@ -6,9 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import voicelog.voicelog.domain.EmailCertification;
-import voicelog.voicelog.dto.request.CertificationCheckRequestDto;
-import voicelog.voicelog.dto.request.EmailCertificationRequestDto;
-import voicelog.voicelog.dto.request.EmailCheckRequestDto;
+import voicelog.voicelog.dto.request.*;
 import voicelog.voicelog.dto.response.*;
 import voicelog.voicelog.provider.EmailProvider;
 import voicelog.voicelog.repository.EmailCertificationRepository;
@@ -16,10 +14,10 @@ import voicelog.voicelog.repository.UserRepository;
 import voicelog.voicelog.common.ResponseCode;
 import voicelog.voicelog.common.ResponseMessage;
 import voicelog.voicelog.domain.User;
-import voicelog.voicelog.dto.request.SignUpRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import voicelog.voicelog.utils.JwtUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +35,7 @@ public class AuthService {
     private final EmailProvider emailProvider;
     private final EmailCertificationRepository emailCertificationRepository;
 
-    private final Map<String, String> emailVerificationMap = new HashMap<>();
-
+    private final JwtUtil jwtUtil;
     // 6자리 인증코드 생성
     private String generateValidationCode() {
         Random rand = new Random();
@@ -188,5 +185,30 @@ public class AuthService {
             return ResponseDto.databaseError();
         }
         return CertificationCheckResponseDto.success();
+    }
+
+    //로그인
+    public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
+        String token = null;
+
+        try {
+            String email = dto.getEmail();
+            User user = userRepository.findByUsername(email);
+            if (user == null || user.getStatus() != 1)
+                return SignInResponseDto.signInFail();
+
+            String password = dto.getPassword();
+            String encodedPassword = user.getPassword();
+            boolean isMatched = passwordEncoder.matches(password, encodedPassword);
+            if (!isMatched)
+                return SignInResponseDto.signInFail();
+
+            token = jwtUtil.createJwt(email, 1000 * 60 * 60L);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        System.out.println(token);
+        return SignInResponseDto.success(token);
     }
 }
