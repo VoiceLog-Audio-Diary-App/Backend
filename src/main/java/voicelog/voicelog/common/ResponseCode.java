@@ -10,6 +10,7 @@ public interface ResponseCode {
 
     //HTTP 401
     String SIGN_IN_FAIL = "SF";
+    String INVALID_REFRESH_TOKEN = "IRT";
 
     //HTTP 500
     String DATABASE_ERROR = "DBE";

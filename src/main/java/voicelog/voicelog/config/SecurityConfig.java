@@ -66,7 +66,6 @@ public class SecurityConfig {
             .exceptionHandling(exceptionHandling -> exceptionHandling
                     .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
             )
-            //.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 
@@ -91,7 +90,7 @@ public class SecurityConfig {
         @Override
         public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
             response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("{\"code\": \"NP\", \"message\": \"No Permission.\"}");
         }
     }

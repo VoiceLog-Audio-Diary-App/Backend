@@ -1,10 +1,11 @@
-package voicelog.voicelog.dto.response;
+package voicelog.voicelog.dto.response.auth;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import voicelog.voicelog.common.ResponseCode;
 import voicelog.voicelog.common.ResponseMessage;
+import voicelog.voicelog.dto.response.ResponseDto;
 
 @Getter
 public class EmailCheckResponseDto extends ResponseDto {

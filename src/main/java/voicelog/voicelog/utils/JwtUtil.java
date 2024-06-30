@@ -12,14 +12,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+import voicelog.voicelog.domain.RefreshToken;
+import voicelog.voicelog.repository.RefreshTokenRepository;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtUtil {
@@ -27,6 +26,9 @@ public class JwtUtil {
     @Value("${JWT_SECRET}")
     private String JWT_SECRET;
     private static SecretKey key;
+
+    //private RefreshTokenRepository refreshTokenRepository;
+
 
     @PostConstruct
     public void init() {
@@ -67,6 +69,10 @@ public class JwtUtil {
                 .before(new Date());
     }
 
+    public static boolean validateToken(String token, String username) {
+        return getUsername(token).equals(username) && !isExpired(token);
+    }
+
     public static String getUsername(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -75,4 +81,6 @@ public class JwtUtil {
                 .getBody()
                 .get("username", String.class);
     }
+
+
 }

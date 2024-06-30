@@ -3,13 +3,10 @@ package voicelog.voicelog.controller;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import voicelog.voicelog.dto.request.*;
-import voicelog.voicelog.dto.response.*;
+import voicelog.voicelog.dto.response.auth.*;
 import voicelog.voicelog.service.AuthService;
-import voicelog.voicelog.common.ResponseCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-
-import java.util.HashMap;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,40 +49,10 @@ public class AuthController {
         return response;
     }
 
-    /*@PostMapping("/sign-up")
-    public ResponseEntity<ResponseDto> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
-        ResponseDto response = authService.signUp(signUpRequestDto);
-        if (ResponseCode.SUCCESS.equals(response.getResponseCode())) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-    }*/
-
-
-
-    /*@PostMapping("/mailSend")
-    public HashMap<String, Object> mailSend(@Valid @RequestBody EmailCertificationRequestDto emailDto) {
-        HashMap<String, Object> map = new HashMap<>();
-
-        try {
-            authService.sendMail(emailDto);
-
-            map.put("success", Boolean.TRUE);
-        } catch (Exception e) {
-            map.put("success", Boolean.FALSE);
-            map.put("error", e.getMessage());
-        }
-
-        return map;
+    @PostMapping("/refreshAccessToken")
+    public ResponseEntity<? super RefreshAccessTokenResponseDto> refreshAccessToken(
+            @RequestBody @Valid RefreshAccessTokenRequestDto requestBody) {
+        ResponseEntity<? super RefreshAccessTokenResponseDto> response = authService.refreshAccessToken(requestBody);
+        return response;
     }
-
-    @GetMapping("/mailCheck")
-    public ResponseEntity<?> mailCheck(@RequestParam String mail, @RequestParam String userNumber) {
-
-        boolean isMatch = authService.checkVerificationNumber(mail, userNumber);
-        return ResponseEntity.ok(isMatch);
-    }*/
-
-
 }

@@ -11,6 +11,7 @@ public interface ResponseMessage {
 
     //HTTP 401
     String SIGN_IN_FAIL = "Login information mismatch";
+    String INVALID_REFRESH_TOKEN = "Invalid refresh token";
 
     //HTTP 500
     String DATABASE_ERROR = "database error";

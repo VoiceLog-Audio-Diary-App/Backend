@@ -32,7 +32,6 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        //username 토큰에서 꺼내기
         final String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
         log.info("authorization : {}", authorization);
 
@@ -49,13 +48,20 @@ public class JwtFilter extends OncePerRequestFilter {
         //토큰 만료되었는지 확인
         if (JwtUtil.isExpired(token)) {
             log.error("토큰 만료");
-            filterChain.doFilter(request, response);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 만료되었습니다.");
             return;
         }
 
         //username 토큰에서 꺼내기
         String username = JwtUtil.getUsername(token);
         log.info("Username : {}", username);
+
+        //토큰 검증
+        if (!JwtUtil.validateToken(token, username)) {
+            log.error("잘못된 토큰");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "잘못된 토큰입니다.");
+            return;
+        }
 
         //권한부여
         UsernamePasswordAuthenticationToken authenticationToken =
@@ -64,6 +70,7 @@ public class JwtFilter extends OncePerRequestFilter {
         //detail 넣어주기
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
         filterChain.doFilter(request, response);
     }
 }
