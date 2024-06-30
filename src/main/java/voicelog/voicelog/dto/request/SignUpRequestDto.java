@@ -20,9 +20,6 @@ public class SignUpRequestDto {
     @Pattern(regexp="^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{8,20}$")
     private String password;
 
-    @NotNull
-    private String name;
-
     @NotBlank
     private String certificationNumber;
 }
