@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
@@ -29,8 +30,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import voicelog.voicelog.filter.JwtFilter;
+import voicelog.voicelog.handler.OAuth2SuccessHandler;
 import voicelog.voicelog.repository.UserRepository;
 import voicelog.voicelog.service.AuthService;
+import voicelog.voicelog.service.OAuth2UserServiceImpl;
 
 import java.io.IOException;
 
@@ -40,6 +43,15 @@ import java.io.IOException;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final OAuth2UserServiceImpl oAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
+        return web -> web.ignoring()
+                // error endpoint를 열어줘야 함, favicon.ico 추가!
+                .requestMatchers("/error", "/favicon.ico");
+    }
 
     @Bean
     PasswordEncoder passwordEncoder(){
@@ -61,7 +73,12 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(request -> request
                     .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/login/oauth2/code/kakao").permitAll()
                     .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth ->
+                    oauth.userInfoEndpoint(c -> c.userService(oAuth2UserService))
+                            .successHandler(oAuth2SuccessHandler)
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
                     .authenticationEntryPoint(new FailedAuthenticationEntryPoint())

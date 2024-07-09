@@ -22,11 +22,8 @@ public class User {
     @Column(length = 50, nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
-/*
-    @Column(nullable = false)
-    private String name;*/
 
     @Column(nullable = false)
     private Integer status;
@@ -52,5 +49,13 @@ public class User {
         this.created_at = LocalDateTime.now();
         this.updated_at = LocalDateTime.now();
         this.type = "voicelog";
+    }
+
+    public User(String username) {
+        this.username = username;
+        this.status = 1;
+        this.created_at = LocalDateTime.now();
+        this.updated_at = LocalDateTime.now();
+        this.type = "naver";
     }
 }

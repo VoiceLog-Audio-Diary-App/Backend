@@ -32,6 +32,13 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        String requestURI = request.getRequestURI();
+        if ("/login/oauth2/code/kakao".equals(requestURI)) {
+            log.info("Skipping JWT filter for /login/oauth2/code/kakao");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
         log.info("authorization : {}", authorization);
 
