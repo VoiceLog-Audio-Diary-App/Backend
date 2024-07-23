@@ -1,4 +1,4 @@
-package voicelog.voicelog.dto.request;
+package voicelog.voicelog.dto.request.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

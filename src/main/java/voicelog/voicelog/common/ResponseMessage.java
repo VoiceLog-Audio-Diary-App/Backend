@@ -6,8 +6,8 @@ public interface ResponseMessage {
 
     //HTTP 400
     String DUPLICATE_EMAIL = "duplicate email";
-    String MAIL_FAIL = "mail send failed";
     String CERTIFICATE_FAIL = "certification failed";
+    String INVALID_FILE = "invalid file";
 
     //HTTP 401
     String SIGN_IN_FAIL = "Login information mismatch";
@@ -15,5 +15,6 @@ public interface ResponseMessage {
 
     //HTTP 500
     String DATABASE_ERROR = "database error";
-
+    String MAIL_FAIL = "mail send failed";
+    String STT_FAIL = "STT error";
 }

@@ -7,6 +7,7 @@ public interface ResponseCode {
     //HTTP 400
     String DUPLICATE_EMAIL = "DE";
     String CERTIFICATE_FAIL = "CF";
+    String INVALID_FILE = "IF";
 
     //HTTP 401
     String SIGN_IN_FAIL = "SF";
@@ -15,4 +16,5 @@ public interface ResponseCode {
     //HTTP 500
     String DATABASE_ERROR = "DBE";
     String MAIL_FAIL = "MF";
+    String STT_FAIL = "SF";
 }

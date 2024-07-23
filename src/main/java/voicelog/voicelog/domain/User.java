@@ -1,7 +1,7 @@
 package voicelog.voicelog.domain;
 
 import jakarta.persistence.*;
-import voicelog.voicelog.dto.request.SignUpRequestDto;
+import voicelog.voicelog.dto.request.auth.SignUpRequestDto;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 

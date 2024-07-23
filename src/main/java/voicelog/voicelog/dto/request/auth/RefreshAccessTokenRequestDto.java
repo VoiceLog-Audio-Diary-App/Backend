@@ -1,4 +1,4 @@
-package voicelog.voicelog.dto.request;
+package voicelog.voicelog.dto.request.auth;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

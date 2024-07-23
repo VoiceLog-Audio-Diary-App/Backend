@@ -1,21 +1,12 @@
 package voicelog.voicelog.controller;
 
-import io.jsonwebtoken.io.IOException;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import voicelog.voicelog.dto.request.*;
-import voicelog.voicelog.dto.response.ResponseDto;
+import voicelog.voicelog.dto.request.auth.*;
 import voicelog.voicelog.dto.response.auth.*;
 import voicelog.voicelog.service.AuthService;
 import lombok.RequiredArgsConstructor;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
