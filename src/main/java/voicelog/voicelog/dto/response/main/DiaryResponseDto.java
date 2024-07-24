@@ -10,14 +10,14 @@ import voicelog.voicelog.dto.response.ResponseDto;
 @Getter
 public class DiaryResponseDto extends ResponseDto {
 
-    private Boolean exist;
-    private DiaryResponseDto(Boolean exist) {
+    private String content;
+    private DiaryResponseDto(String content) {
         super();
-        this.exist = exist;
+        this.content = content;
     }
 
-    public static ResponseEntity<DiaryResponseDto> success(Boolean exist) {
-        DiaryResponseDto responseBody = new DiaryResponseDto(exist);
+    public static ResponseEntity<DiaryResponseDto> success(String content) {
+        DiaryResponseDto responseBody = new DiaryResponseDto(content);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 

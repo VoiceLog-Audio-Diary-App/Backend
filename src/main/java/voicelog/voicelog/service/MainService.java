@@ -54,17 +54,20 @@ public class MainService {
 
     public ResponseEntity<? super DiaryResponseDto> getDiary(LocalDate date, String email) {
         User user = userRepository.findByUsername(email);
-        Boolean exist;
+        String content;
         try {
             Optional<Diary> optionalDiary = diaryRepository.findByDateAndUser(date, user);
             if (optionalDiary.isPresent())
-                exist = true;
+            {
+                Diary diary = optionalDiary.get();
+                content = diary.getContent();
+            }
             else
-                exist = false;
+                content = null;
         } catch (Exception e) {
             e.printStackTrace();
             return DiaryResponseDto.databaseError();
         }
-        return DiaryResponseDto.success(exist);
+        return DiaryResponseDto.success(content);
     }
 }
