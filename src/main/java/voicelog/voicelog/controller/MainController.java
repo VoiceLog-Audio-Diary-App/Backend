@@ -1,16 +1,21 @@
 package voicelog.voicelog.controller;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.angus.mail.iap.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import voicelog.voicelog.common.ResponseCode;
 import voicelog.voicelog.domain.Diary;
 import voicelog.voicelog.dto.request.main.GPTRequestDto;
 import voicelog.voicelog.dto.request.main.TranscriptionRequestDto;
+import voicelog.voicelog.dto.response.ResponseDto;
 import voicelog.voicelog.dto.response.main.DiaryResponseDto;
 import voicelog.voicelog.dto.response.main.GPTResponseDto;
 import voicelog.voicelog.dto.response.main.MainResponseDto;
@@ -84,6 +89,7 @@ public class MainController {
             e.printStackTrace();
             return MainResponseDto.databaseError();
         }
+
         ResponseEntity<? super GPTResponseDto> response = mainService.getResultByGPT(requestBody, email);
         return response;
     }
