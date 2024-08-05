@@ -125,7 +125,7 @@ public class MainService {
 
         //run 완료되도록 대기
         try {
-            Thread.sleep(4000); // 5000밀리초(5초) 동안 대기
+            Thread.sleep(5000); // 5000밀리초(5초) 동안 대기
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
