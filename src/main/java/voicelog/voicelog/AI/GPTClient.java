@@ -25,14 +25,14 @@ public class GPTClient {
     //private String runId;
 
     public String createThread() {
-        String threadId;
+        String threadId = null;
         try{
             HttpClient client = HttpClient.newBuilder()
                     .version(HttpClient.Version.HTTP_2)
                     .followRedirects(HttpClient.Redirect.NORMAL)
                     .build();
 
-            String url = "https://api.openai.com/v1/threads/";
+            String url = "https://api.openai.com/v1/threads";
 
             String json = "{}";
 
