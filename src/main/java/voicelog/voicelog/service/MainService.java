@@ -11,9 +11,11 @@ import voicelog.voicelog.AI.GPTClient;
 import voicelog.voicelog.AI.NaverCloudClient;
 import voicelog.voicelog.domain.Diary;
 import voicelog.voicelog.domain.User;
+import voicelog.voicelog.dto.request.main.DiaryUpdateRequestDto;
 import voicelog.voicelog.dto.request.main.GPTRequestDto;
 import voicelog.voicelog.dto.request.main.TranscriptionRequestDto;
 import voicelog.voicelog.dto.response.main.DiaryResponseDto;
+import voicelog.voicelog.dto.response.main.DiaryUpdateResponseDto;
 import voicelog.voicelog.dto.response.main.GPTResponseDto;
 import voicelog.voicelog.dto.response.main.TranscriptionResponseDto;
 import voicelog.voicelog.repository.DiaryRepository;
@@ -38,12 +40,6 @@ public class MainService {
     private final DiaryRepository diaryRepository;
     private final UserRepository userRepository;
     private final GPTClient gptClient;
-
-    @Value("${openai.api.key}")
-    private String apiKey;
-
-    @Value("${openai.assistant.id}")
-    private String assistantId;
 
     private String threadId;
 
@@ -73,7 +69,7 @@ public class MainService {
         User user = userRepository.findByUsername(email);
         String content;
         try {
-            Optional<Diary> optionalDiary = diaryRepository.findByDateAndUser(date, user);
+            Optional<Diary> optionalDiary = diaryRepository.findByDateAndUserAndDeleted(date, user, false);
             if (optionalDiary.isPresent())
             {
                 Diary diary = optionalDiary.get();
@@ -99,7 +95,7 @@ public class MainService {
 
         //같은 날짜의 일기가 있을 경우
         try {
-            Optional<Diary> optionalDiary = diaryRepository.findByDateAndUser(dto.getDate(), user);
+            Optional<Diary> optionalDiary = diaryRepository.findByDateAndUserAndDeleted(dto.getDate(), user, false);
             if (optionalDiary.isPresent())
             {
                 return GPTResponseDto.duplicateDiary();
@@ -164,32 +160,30 @@ public class MainService {
         if (gptClient.deleteThread(threadId) != 200)
             return GPTResponseDto.GPTFail();
 
-        /*try{
-            HttpClient client = HttpClient.newBuilder()
-                    .version(HttpClient.Version.HTTP_2)
-                    .followRedirects(HttpClient.Redirect.NORMAL)
-                    .build();
+        return GPTResponseDto.success(title, content);
+    }
 
-            String url = "https://api.openai.com/v1/threads/" + threadId;
+    public ResponseEntity<? super DiaryUpdateResponseDto> updateDiary(DiaryUpdateRequestDto dto, String email) {
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", "Bearer " + apiKey)
-                    .header("Content-Type", "application/json")
-                    .header("OpenAI-Beta", "assistants=v2")
-                    .DELETE()
-                    .build();
+        User user = userRepository.findByUsername(email);
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Optional<Diary> optionalDiary = diaryRepository.findByDateAndUserAndDeleted(dto.getDate(), user, false);
 
-            System.out.println("thread 삭제 응답 코드: " + response.statusCode());
-            System.out.println("thread 삭제 응답 본문: " + response.body());
-
+        try {
+            if (optionalDiary.isPresent()) {
+                Diary diary = optionalDiary.get();
+                diary.setTitle(dto.getNewTitle());
+                diary.setContent(dto.getNewContent());
+                diary.setUpdatedAt(LocalDateTime.now());
+                diaryRepository.save(diary);
+            } else {
+                return DiaryUpdateResponseDto.notExist();
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            return GPTResponseDto.GPTFail();
-        }*/
+            return DiaryUpdateResponseDto.databaseError();
+        }
 
-        return GPTResponseDto.success(title, content);
+        return DiaryUpdateResponseDto.success(dto.getNewTitle(), dto.getNewContent());
     }
 }

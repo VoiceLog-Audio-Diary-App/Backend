@@ -13,13 +13,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import voicelog.voicelog.common.ResponseCode;
 import voicelog.voicelog.domain.Diary;
+import voicelog.voicelog.dto.request.main.DiaryUpdateRequestDto;
 import voicelog.voicelog.dto.request.main.GPTRequestDto;
 import voicelog.voicelog.dto.request.main.TranscriptionRequestDto;
 import voicelog.voicelog.dto.response.ResponseDto;
-import voicelog.voicelog.dto.response.main.DiaryResponseDto;
-import voicelog.voicelog.dto.response.main.GPTResponseDto;
-import voicelog.voicelog.dto.response.main.MainResponseDto;
-import voicelog.voicelog.dto.response.main.TranscriptionResponseDto;
+import voicelog.voicelog.dto.response.main.*;
 import voicelog.voicelog.service.MainService;
 
 import java.time.LocalDate;
@@ -73,7 +71,7 @@ public class MainController {
         return response;
     }
 
-    @PostMapping(value = "/gpt")
+    @PostMapping("/gpt")
     public ResponseEntity<? super GPTResponseDto> getResultByGPT(
             @RequestBody @Valid GPTRequestDto requestBody) {
         String email = null;
@@ -91,6 +89,27 @@ public class MainController {
         }
 
         ResponseEntity<? super GPTResponseDto> response = mainService.getResultByGPT(requestBody, email);
+        return response;
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<? super DiaryUpdateResponseDto> updateDiary(
+            @RequestBody DiaryUpdateRequestDto requestBody) {
+        String email = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        try {
+            if (authentication != null) {
+                email = authentication.getName();
+            }
+            if (email == null)
+                return MainResponseDto.noAuthentication();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return MainResponseDto.databaseError();
+        }
+
+        ResponseEntity<? super DiaryUpdateResponseDto> response = mainService.updateDiary(requestBody, email);
         return response;
     }
 }

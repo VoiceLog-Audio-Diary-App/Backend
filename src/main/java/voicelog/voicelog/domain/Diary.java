@@ -2,6 +2,7 @@ package voicelog.voicelog.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
@@ -11,7 +12,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class Diary {
 
@@ -39,4 +39,11 @@ public class Diary {
     @CreatedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column
+    private Boolean deleted;
+
+    public Diary() {
+        this.deleted = false;
+    }
 }

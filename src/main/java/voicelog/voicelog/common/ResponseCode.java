@@ -9,6 +9,7 @@ public interface ResponseCode {
     String CERTIFICATE_FAIL = "CF";
     String INVALID_FILE = "IF";
     String DUPLICATE_DIARY = "DD";
+    String NOT_EXIST_DIARY = "NED";
 
     //HTTP 401
     String SIGN_IN_FAIL = "SF";

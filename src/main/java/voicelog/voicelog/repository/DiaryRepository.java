@@ -8,5 +8,5 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
-    Optional<Diary> findByDateAndUser(LocalDate date, User user);
+    Optional<Diary> findByDateAndUserAndDeleted(LocalDate date, User user, Boolean deleted);
 }

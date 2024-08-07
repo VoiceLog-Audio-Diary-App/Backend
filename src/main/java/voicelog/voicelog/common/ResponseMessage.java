@@ -9,6 +9,7 @@ public interface ResponseMessage {
     String CERTIFICATE_FAIL = "certification failed";
     String INVALID_FILE = "invalid file";
     String DUPLICATE_DIARY = "duplicate diary";
+    String NOT_EXIST_DIARY = "not exist diary";
 
     //HTTP 401
     String SIGN_IN_FAIL = "Login information mismatch";
