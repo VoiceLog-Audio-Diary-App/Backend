@@ -67,21 +67,21 @@ public class MainService {
 
     public ResponseEntity<? super DiaryResponseDto> getDiary(LocalDate date, String email) {
         User user = userRepository.findByUsername(email);
-        String content;
+        String content = null;
+        String title = null;
         try {
             Optional<Diary> optionalDiary = diaryRepository.findByDateAndUserAndDeleted(date, user, false);
             if (optionalDiary.isPresent())
             {
                 Diary diary = optionalDiary.get();
                 content = diary.getContent();
+                title = diary.getTitle();
             }
-            else
-                content = null;
         } catch (Exception e) {
             e.printStackTrace();
             return DiaryResponseDto.databaseError();
         }
-        return DiaryResponseDto.success(content);
+        return DiaryResponseDto.success(title, content);
     }
 
     public ResponseEntity<? super GPTResponseDto> getResultByGPT(GPTRequestDto dto, String email){

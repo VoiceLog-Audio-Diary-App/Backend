@@ -11,13 +11,15 @@ import voicelog.voicelog.dto.response.ResponseDto;
 public class DiaryResponseDto extends ResponseDto {
 
     private String content;
-    private DiaryResponseDto(String content) {
+    private String title;
+    private DiaryResponseDto(String title, String content) {
         super();
         this.content = content;
+        this.title = title;
     }
 
-    public static ResponseEntity<DiaryResponseDto> success(String content) {
-        DiaryResponseDto responseBody = new DiaryResponseDto(content);
+    public static ResponseEntity<DiaryResponseDto> success(String title, String content) {
+        DiaryResponseDto responseBody = new DiaryResponseDto(title, content);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
