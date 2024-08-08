@@ -112,4 +112,25 @@ public class MainController {
         ResponseEntity<? super DiaryUpdateResponseDto> response = mainService.updateDiary(requestBody, email);
         return response;
     }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<? super DiaryDeleteResponseDto> deleteDiary(@RequestParam LocalDate date) {
+
+        String email = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        try {
+            if (authentication != null) {
+                email = authentication.getName();
+            }
+            if (email == null)
+                return MainResponseDto.noAuthentication();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return MainResponseDto.databaseError();
+        }
+
+        ResponseEntity<? super DiaryDeleteResponseDto> response = mainService.deleteDiary(date, email);
+        return response;
+    }
 }

@@ -20,10 +20,6 @@ public class GPTClient {
     @Value("${openai.assistant.id}")
     private String assistantId;
 
-    //private String threadId;
-
-    //private String runId;
-
     public String createThread() {
         String threadId = null;
         try{

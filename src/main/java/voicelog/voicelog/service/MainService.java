@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,10 +15,7 @@ import voicelog.voicelog.domain.User;
 import voicelog.voicelog.dto.request.main.DiaryUpdateRequestDto;
 import voicelog.voicelog.dto.request.main.GPTRequestDto;
 import voicelog.voicelog.dto.request.main.TranscriptionRequestDto;
-import voicelog.voicelog.dto.response.main.DiaryResponseDto;
-import voicelog.voicelog.dto.response.main.DiaryUpdateResponseDto;
-import voicelog.voicelog.dto.response.main.GPTResponseDto;
-import voicelog.voicelog.dto.response.main.TranscriptionResponseDto;
+import voicelog.voicelog.dto.response.main.*;
 import voicelog.voicelog.repository.DiaryRepository;
 import voicelog.voicelog.repository.UserRepository;
 
@@ -185,5 +183,26 @@ public class MainService {
         }
 
         return DiaryUpdateResponseDto.success(dto.getNewTitle(), dto.getNewContent());
+    }
+
+    public ResponseEntity<? super DiaryDeleteResponseDto> deleteDiary(LocalDate date, String email) {
+
+        User user = userRepository.findByUsername(email);
+        Optional<Diary> optionalDiary = diaryRepository.findByDateAndUserAndDeleted(date, user, false);
+
+        try {
+            if (optionalDiary.isPresent()) {
+                Diary diary = optionalDiary.get();
+                diary.setDeleted(true);
+                diaryRepository.save(diary);
+            } else {
+                return DiaryDeleteResponseDto.notExist();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return DiaryDeleteResponseDto.databaseError();
+        }
+
+        return DiaryDeleteResponseDto.success();
     }
 }
