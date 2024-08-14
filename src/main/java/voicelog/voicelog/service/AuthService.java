@@ -146,7 +146,7 @@ public class AuthService {
 
         try {
             String email = dto.getEmail();
-            User user = userRepository.findByUsername(email);
+            User user = userRepository.findByUsernameAndStatus(email, 1);
             if (user == null || user.getStatus() != 1)
                 return SignInResponseDto.signInFail();
 
@@ -206,7 +206,7 @@ public class AuthService {
             return ResponseDto.databaseError();
         }
         String email = jwtUtil.getUsername(newAccessToken);
-        User user = userRepository.findByUsername(email);
+        User user = userRepository.findByUsernameAndStatus(email, 1);
 
         Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(user);
         RefreshToken token = optionalToken.get();

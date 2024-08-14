@@ -54,7 +54,7 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
             String refreshToken = jwtUtil.createJwt(userEmail, 1000 * 60 * 60 * 24 * 30L);
 
             if (userRepository.existsByUsername(userEmail)){
-                User existUser = userRepository.findByUsername(userEmail);
+                User existUser = userRepository.findByUsernameAndStatus(userEmail, 1);
                 Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(existUser);
 
                 log.info("User with email {} signed in successfully.", userEmail);

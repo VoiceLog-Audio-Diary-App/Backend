@@ -46,7 +46,7 @@ public class MainService {
     public ResponseEntity<? super TranscriptionResponseDto> getTextByFile(TranscriptionRequestDto dto, String email) {
 
         String text = "";
-        User user = userRepository.findByUsername(email);
+        User user = userRepository.findByUsernameAndStatus(email, 1);
         int coin = user.getCoin();
 
         if (coin == 0)
@@ -69,7 +69,7 @@ public class MainService {
     }
 
     public ResponseEntity<? super DiaryResponseDto> getDiary(LocalDate date, String email) {
-        User user = userRepository.findByUsername(email);
+        User user = userRepository.findByUsernameAndStatus(email, 1);
         String content = null;
         String title = null;
         try {
@@ -91,7 +91,7 @@ public class MainService {
 
         String title = "", content = "";
 
-        User user = userRepository.findByUsername(email);
+        User user = userRepository.findByUsernameAndStatus(email, 1);
         int coin = user.getCoin();
 
         if (dto.getInput() == null)
@@ -161,7 +161,7 @@ public class MainService {
 
     public ResponseEntity<? super DiaryUpdateResponseDto> updateDiary(DiaryUpdateRequestDto dto, String email) {
 
-        User user = userRepository.findByUsername(email);
+        User user = userRepository.findByUsernameAndStatus(email, 1);
 
         Optional<Diary> optionalDiary = diaryRepository.findByDateAndUserAndDeleted(dto.getDate(), user, false);
 
@@ -185,7 +185,7 @@ public class MainService {
 
     public ResponseEntity<? super DiaryDeleteResponseDto> deleteDiary(LocalDate date, String email) {
 
-        User user = userRepository.findByUsername(email);
+        User user = userRepository.findByUsernameAndStatus(email, 1);
         Optional<Diary> optionalDiary = diaryRepository.findByDateAndUserAndDeleted(date, user, false);
 
         try {
