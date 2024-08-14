@@ -123,17 +123,6 @@ public class MainService {
         if (runId == null)
             return GPTResponseDto.GPTFail();
 
-        //run 완료되도록 대기
-        try {
-            Thread.sleep(5000); // 5000밀리초(5초) 동안 대기
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        //run 찾기
-        /*if (gptClient.retrieveRun(threadId, runId) != 200)
-            return GPTResponseDto.GPTFail();*/
-
         //메시지 가져오기
         String[] result = gptClient.listMessages(threadId);
         if (result == null)

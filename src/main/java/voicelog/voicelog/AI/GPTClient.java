@@ -187,54 +187,6 @@ public class GPTClient {
         return runStatus;
     }
 
-    /*public String checkRunStatus(String threadId, String runId) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-        String statusUrl = "https://api.openai.com/v1/threads/" + threadId + "/runs/" + runId;
-
-        HttpRequest statusRequest = HttpRequest.newBuilder()
-                .uri(URI.create(statusUrl))
-                .header("Authorization", "Bearer " + apiKey)
-                .header("Content-Type", "application/json")
-                .header("OpenAI-Beta", "assistants=v2")
-                .GET()
-                .build();
-
-        HttpResponse<String> statusResponse = client.send(statusRequest, HttpResponse.BodyHandlers.ofString());
-        String statusResponseBody = statusResponse.body();
-        System.out.println(statusResponseBody);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode statusRootNode = objectMapper.readTree(statusResponseBody);
-        return statusRootNode.path("status").asText();
-    }*/
-
-    /*public int retrieveRun(String threadId, String runId) {
-        int result = 0;
-        try {
-            HttpClient client = HttpClient.newHttpClient();
-
-            String url = "https://api.openai.com/v1/threads/" + threadId + "/runs/" + runId;
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", "Bearer " + apiKey)
-                    .header("OpenAI-Beta", "assistants=v2")
-                    .GET()
-                    .build();
-
-            HttpResponse<String> runResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            result = runResponse.statusCode();
-            System.out.println("retrieve 응답 코드: " + runResponse.statusCode());
-            System.out.println("retrieve 응답 본문: " + runResponse.body());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return result;
-    }*/
-
     public String[] listMessages(String threadId) {
         String title, content;
         try {
