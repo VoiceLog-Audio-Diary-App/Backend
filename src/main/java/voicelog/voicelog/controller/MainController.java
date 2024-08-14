@@ -67,7 +67,7 @@ public class MainController {
             return MainResponseDto.databaseError();
         }
 
-        ResponseEntity<? super TranscriptionResponseDto> response = mainService.getTextByFile(dto);
+        ResponseEntity<? super TranscriptionResponseDto> response = mainService.getTextByFile(dto, email);
         return response;
     }
 

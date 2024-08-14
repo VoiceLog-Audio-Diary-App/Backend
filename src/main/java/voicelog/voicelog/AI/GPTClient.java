@@ -99,7 +99,7 @@ public class GPTClient {
     }
 
     public String createRun(String threadId){
-        String runId;
+        String runId, runStatus = "";
         try {
             HttpClient client = HttpClient.newHttpClient();
 
@@ -127,6 +127,25 @@ public class GPTClient {
             runId = rootNode.path("id").asText();
             System.out.println("Run ID: " + runId);
 
+            //상태 체크
+            int checkInterval = 500;
+            int maxTimeout = 30000;
+            int elapsedTime = 0;
+
+            runStatus = retrieveRun(threadId, runId);
+            while (!runStatus.equals("completed") && elapsedTime < maxTimeout) {
+                Thread.sleep(checkInterval);
+                elapsedTime += checkInterval;
+
+                runStatus = retrieveRun(threadId, runId);
+                System.out.println("Run Status: " + runStatus);
+            }
+
+            if (!runStatus.equals("completed")) {
+                System.out.println("Create run Time Out");
+                return null;
+            }
+
             System.out.println("run 응답 코드: " + runResponse.statusCode());
             System.out.println("run 응답 본문: " + runResponse.body());
 
@@ -138,7 +157,58 @@ public class GPTClient {
         return runId;
     }
 
-    public int retrieveRun(String threadId, String runId) {
+    public String retrieveRun(String threadId, String runId) {
+        String runStatus = "";
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+
+            String url = "https://api.openai.com/v1/threads/" + threadId + "/runs/" + runId;
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("OpenAI-Beta", "assistants=v2")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("retrieve 응답 코드: " + response.statusCode());
+            System.out.println("retrieve 응답 본문: " + response.body());
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode statusRootNode = objectMapper.readTree(response.body());
+            runStatus = statusRootNode.path("status").asText();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return runStatus;
+    }
+
+    /*public String checkRunStatus(String threadId, String runId) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        String statusUrl = "https://api.openai.com/v1/threads/" + threadId + "/runs/" + runId;
+
+        HttpRequest statusRequest = HttpRequest.newBuilder()
+                .uri(URI.create(statusUrl))
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .header("OpenAI-Beta", "assistants=v2")
+                .GET()
+                .build();
+
+        HttpResponse<String> statusResponse = client.send(statusRequest, HttpResponse.BodyHandlers.ofString());
+        String statusResponseBody = statusResponse.body();
+        System.out.println(statusResponseBody);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode statusRootNode = objectMapper.readTree(statusResponseBody);
+        return statusRootNode.path("status").asText();
+    }*/
+
+    /*public int retrieveRun(String threadId, String runId) {
         int result = 0;
         try {
             HttpClient client = HttpClient.newHttpClient();
@@ -163,7 +233,7 @@ public class GPTClient {
         }
 
         return result;
-    }
+    }*/
 
     public String[] listMessages(String threadId) {
         String title, content;

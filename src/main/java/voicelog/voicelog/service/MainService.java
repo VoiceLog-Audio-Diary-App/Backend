@@ -43,9 +43,14 @@ public class MainService {
 
     private String runId;
 
-    public ResponseEntity<? super TranscriptionResponseDto> getTextByFile(TranscriptionRequestDto dto) {
+    public ResponseEntity<? super TranscriptionResponseDto> getTextByFile(TranscriptionRequestDto dto, String email) {
 
         String text = "";
+        User user = userRepository.findByUsername(email);
+        int coin = user.getCoin();
+
+        if (coin == 0)
+            return MainResponseDto.coinRequired();
 
         try {
             MultipartFile file = dto.getFile();
@@ -87,6 +92,7 @@ public class MainService {
         String title = "", content = "";
 
         User user = userRepository.findByUsername(email);
+        int coin = user.getCoin();
 
         if (dto.getInput() == null)
             return GPTResponseDto.invalidFile();
@@ -125,8 +131,8 @@ public class MainService {
         }
 
         //run 찾기
-        if (gptClient.retrieveRun(threadId, runId) != 200)
-            return GPTResponseDto.GPTFail();
+        /*if (gptClient.retrieveRun(threadId, runId) != 200)
+            return GPTResponseDto.GPTFail();*/
 
         //메시지 가져오기
         String[] result = gptClient.listMessages(threadId);
@@ -148,6 +154,9 @@ public class MainService {
                 diary.setUpdatedAt(LocalDateTime.now());
 
                 diaryRepository.save(diary);
+
+                user.setCoin(coin - 1);
+                userRepository.save(user);
             } catch (Exception e) {
                 e.printStackTrace();
                 return GPTResponseDto.databaseError();

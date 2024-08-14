@@ -11,6 +11,9 @@ public interface ResponseMessage {
     String DUPLICATE_DIARY = "duplicate diary";
     String NOT_EXIST_DIARY = "not exist diary";
 
+    //HTTP 402
+    String COIN_REQUIRED = "not enough coin";
+
     //HTTP 401
     String SIGN_IN_FAIL = "Login information mismatch";
     String INVALID_REFRESH_TOKEN = "Invalid refresh token";

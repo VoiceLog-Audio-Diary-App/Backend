@@ -28,4 +28,9 @@ public class MainResponseDto extends ResponseDto{
         ResponseDto result = new ResponseDto(ResponseCode.AUTHORIZATION_FAIL, ResponseMessage.AUTHORIZATION_FAIL);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
     }
+
+    public static ResponseEntity<ResponseDto> coinRequired() {
+        ResponseDto result = new ResponseDto(ResponseCode.COIN_REQUIRED, ResponseMessage.COIN_REQUIRED);
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(result);
+    }
 }

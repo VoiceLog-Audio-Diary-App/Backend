@@ -16,6 +16,9 @@ public interface ResponseCode {
     String INVALID_REFRESH_TOKEN = "IRT";
     String AUTHORIZATION_FAIL = "AF";
 
+    //HTTP 402
+    String COIN_REQUIRED = "CR";
+
     //HTTP 403
     String NO_PERMISSION = "NP";
 
