@@ -10,6 +10,7 @@ public interface ResponseCode {
     String INVALID_FILE = "IF";
     String DUPLICATE_DIARY = "DD";
     String NOT_EXIST_DIARY = "NED";
+    String NOT_INVALID_PASSWORD = "NIP";
 
     //HTTP 401
     String SIGN_IN_FAIL = "SF";

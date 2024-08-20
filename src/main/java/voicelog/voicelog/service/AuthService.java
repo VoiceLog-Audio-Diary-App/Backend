@@ -3,6 +3,7 @@ package voicelog.voicelog.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import voicelog.voicelog.domain.EmailCertification;
 import voicelog.voicelog.domain.RefreshToken;
 import voicelog.voicelog.dto.request.auth.*;
@@ -28,10 +29,7 @@ import java.util.Random;
 @Slf4j
 public class AuthService {
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    private final JavaMailSender javaMailSender;
-    private static final String senderEmail= "lsj90954511@gmail.com";
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private final EmailProvider emailProvider;
     private final EmailCertificationRepository emailCertificationRepository;
@@ -241,5 +239,60 @@ public class AuthService {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
     }
+    //네이버 여부 확인
+    public ResponseEntity<? super SocialUserCheckResponseDto> socialCheck(String email) {
+        try {
+            User user = userRepository.findByUsernameAndStatus(email, 1);
 
+            if (user.getType().equals("naver"))
+                return SocialUserCheckResponseDto.socialRequest();
+            else
+                return SocialUserCheckResponseDto.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return SocialUserCheckResponseDto.databaseError();
+        }
+    }
+
+    //이전 비밀번호 확인
+    public ResponseEntity<? super OldPasswordCheckResponseDto> oldPasswordCheck(OldPasswordCheckRequestDto dto, String email) {
+        try {
+            User user = userRepository.findByUsernameAndStatus(email, 1);
+
+            boolean isMatched = passwordEncoder.matches(dto.getOldPassword(), user.getPassword());
+            System.out.println("isMatch result: " + isMatched);
+            if (!isMatched) {
+                System.out.println("비번 틀림");
+                return OldPasswordCheckResponseDto.wrongPassword();
+            } else {
+                System.out.println("비번 맞음");
+                return OldPasswordCheckResponseDto.success();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return OldPasswordCheckResponseDto.databaseError();
+        }
+    }
+
+    //비밀번호 재설정
+    public ResponseEntity<? super PasswordPatchResponseDto> passwordPatch(PasswordPatchRequestDto dto, String email) {
+
+        if (!dto.getNewPassword().equals(dto.getCheckNewPassword())) {
+            return PasswordPatchResponseDto.notEqualPassword();
+        }
+
+        try{
+            User user = userRepository.findByUsernameAndStatus(email, 1);
+
+            String password = dto.getNewPassword();
+            password = passwordEncoder.encode(password);
+            user.setPassword(password);
+            user.setUpdated_at(LocalDateTime.now());
+            userRepository.save(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return PasswordPatchResponseDto.databaseError();
+        }
+        return PasswordPatchResponseDto.success();
+    }
 }

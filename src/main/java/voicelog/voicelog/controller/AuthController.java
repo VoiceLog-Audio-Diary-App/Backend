@@ -2,9 +2,13 @@ package voicelog.voicelog.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import voicelog.voicelog.dto.request.auth.*;
+import voicelog.voicelog.dto.response.ResponseDto;
 import voicelog.voicelog.dto.response.auth.*;
+import voicelog.voicelog.dto.response.main.MainResponseDto;
 import voicelog.voicelog.service.AuthService;
 import lombok.RequiredArgsConstructor;
 
@@ -13,12 +17,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthService authService;
-
-    /*@Value("${kakao.client_id}")
-    private String client_id;
-
-    @Value("${kakao.redirect_uri}")
-    private String redirect_uri;*/
 
     @PostMapping("/email-check")
     public ResponseEntity<? super EmailCheckResponseDto> emailCheck(
@@ -62,4 +60,66 @@ public class AuthController {
         return response;
     }
 
+    @GetMapping("/social-check")
+    public ResponseEntity<? super SocialUserCheckResponseDto> socialCheck() {
+
+        String email = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        try {
+            if (authentication != null) {
+                email = authentication.getName();
+            }
+            if (email == null)
+                return ResponseDto.noAuthentication();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        ResponseEntity<? super SocialUserCheckResponseDto> response = authService.socialCheck(email);
+        return response;
+    }
+
+    @PostMapping("/old-password-check")
+    public ResponseEntity<? super OldPasswordCheckResponseDto> oldPasswordCheck(
+            @RequestBody @Valid OldPasswordCheckRequestDto requestBody) {
+        String email = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        try {
+            if (authentication != null) {
+                email = authentication.getName();
+            }
+            if (email == null)
+                return ResponseDto.noAuthentication();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        ResponseEntity<? super OldPasswordCheckResponseDto> response = authService.oldPasswordCheck(requestBody, email);
+        return response;
+    }
+
+    @PatchMapping("/password-patch")
+    public ResponseEntity<? super PasswordPatchResponseDto> passwordPatch(
+            @RequestBody @Valid PasswordPatchRequestDto requestBody) {
+        String email = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        try {
+            if (authentication != null) {
+                email = authentication.getName();
+            }
+            if (email == null)
+                return ResponseDto.noAuthentication();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        ResponseEntity<? super PasswordPatchResponseDto> response = authService.passwordPatch(requestBody, email);
+        return response;
+    }
 }
