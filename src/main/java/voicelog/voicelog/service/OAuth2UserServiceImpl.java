@@ -47,26 +47,28 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
                     throw new OAuth2AuthenticationException("Email not found in OAuth2 response");
                 }
 
+                userEmail = userEmail + 'N';
                 user = new User(userEmail);
             }
 
             String refreshToken = jwtUtil.createJwt(userEmail, 1000 * 60 * 60 * 24 * 30L);
 
             if (userRepository.existsByUsername(userEmail)){
-                User existUser = userRepository.findByUsername(userEmail);
+                User existUser = userRepository.findByUsernameAndStatus(userEmail, 1);
                 Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(existUser);
 
-                if (existUser.getType() == "naver")
+                log.info("User with email {} signed in successfully.", userEmail);
+
+                RefreshToken refreshToken1 = optionalToken.get();
+
+                refreshToken1.setRefreshToken(refreshToken);
+                refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
+                refreshToken1.setCreatedDate(LocalDateTime.now());
+
+                refreshTokenRepository.save(refreshToken1);
+                /*if (existUser.getType() == "naver")
                 {
-                    log.info("User with email {} signed in successfully.", userEmail);
 
-                    RefreshToken refreshToken1 = optionalToken.get();
-
-                    refreshToken1.setRefreshToken(refreshToken);
-                    refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-                    refreshToken1.setCreatedDate(LocalDateTime.now());
-
-                    refreshTokenRepository.save(refreshToken1);
                 }
                 else//자체 로그인 유저 있는 경우
                 {
@@ -92,7 +94,7 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
 
                         refreshTokenRepository.save(refreshToken1);
                     }
-                }
+                }*/
             } else {//네이버 회원가입
                 userRepository.save(user);
 

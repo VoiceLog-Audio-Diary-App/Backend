@@ -1,5 +1,7 @@
 package voicelog.voicelog.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,35 +50,50 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        //토큰 꺼내기
-        String token = authorization.split(" ")[1];
-        log.info("Parsed token : {}", token);
+        try {
+            // 토큰 추출
+            String token = authorization.split(" ")[1];
+            log.info("Parsed token : {}", token);
 
-        //토큰 만료되었는지 확인
-        if (JwtUtil.isExpired(token)) {
-            log.error("토큰 만료");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 만료되었습니다.");
+            // 토큰 만료 여부 확인
+            if (JwtUtil.isExpired(token)) {
+                log.error("Token is expired");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is expired.");
+                return;
+            }
+
+            // 토큰에서 username 추출
+            String username = JwtUtil.getUsername(token);
+            log.info("Extracted Username : {}", username);
+
+            // 토큰 검증
+            if (!JwtUtil.validateToken(token, username)) {
+                log.error("Invalid token");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token.");
+                return;
+            }
+
+            // 권한 부여
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority("USER")));
+
+            //detail 넣어주기
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+        } catch (ExpiredJwtException e) { // 토큰 만료 예외 처리
+            log.error("Token expired exception: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is expired.");
+            return;
+        } catch (JwtException e) { // JWT 예외 처리
+            log.error("JWT exception: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token.");
+            return;
+        } catch (Exception e) { // 기타 예외 처리
+            log.error("Unexpected error occurred while processing the JWT: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
             return;
         }
-
-        //username 토큰에서 꺼내기
-        String username = JwtUtil.getUsername(token);
-        log.info("Username : {}", username);
-
-        //토큰 검증
-        if (!JwtUtil.validateToken(token, username)) {
-            log.error("잘못된 토큰");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "잘못된 토큰입니다.");
-            return;
-        }
-
-        //권한부여
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority("USER")));
-
-        //detail 넣어주기
-        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         filterChain.doFilter(request, response);
     }

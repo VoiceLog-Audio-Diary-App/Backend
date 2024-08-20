@@ -1,7 +1,7 @@
 package voicelog.voicelog.domain;
 
 import jakarta.persistence.*;
-import voicelog.voicelog.dto.request.SignUpRequestDto;
+import voicelog.voicelog.dto.request.auth.SignUpRequestDto;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -42,6 +42,9 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private RefreshToken refreshToken;
 
+    @Column
+    private Integer coin;
+
     public User(SignUpRequestDto dto) {
         this.username = dto.getEmail();
         this.password = dto.getPassword();
@@ -49,13 +52,16 @@ public class User {
         this.created_at = LocalDateTime.now();
         this.updated_at = LocalDateTime.now();
         this.type = "voicelog";
+        this.coin = 2;
     }
 
     public User(String username) {
         this.username = username;
+        this.password = "NAVER";
         this.status = 1;
         this.created_at = LocalDateTime.now();
         this.updated_at = LocalDateTime.now();
         this.type = "naver";
+        this.coin = 2;
     }
 }

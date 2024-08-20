@@ -23,7 +23,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
-        String userEmail = oAuth2User.getName();
+        String userEmail = oAuth2User.getName() + 'N';
         String accessToken = jwtUtil .createJwt(userEmail, 1000 * 60 * 15L);
 
         response.sendRedirect("http://localhost:8080/login/oauth2/code/naver/"+ accessToken);

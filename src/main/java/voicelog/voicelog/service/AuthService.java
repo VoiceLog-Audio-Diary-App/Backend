@@ -1,18 +1,11 @@
 package voicelog.voicelog.service;
 
-import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 import voicelog.voicelog.domain.EmailCertification;
 import voicelog.voicelog.domain.RefreshToken;
-import voicelog.voicelog.dto.request.*;
+import voicelog.voicelog.dto.request.auth.*;
 import voicelog.voicelog.dto.response.*;
 import voicelog.voicelog.dto.response.auth.*;
 import voicelog.voicelog.provider.EmailProvider;
@@ -153,7 +146,7 @@ public class AuthService {
 
         try {
             String email = dto.getEmail();
-            User user = userRepository.findByUsername(email);
+            User user = userRepository.findByUsernameAndStatus(email, 1);
             if (user == null || user.getStatus() != 1)
                 return SignInResponseDto.signInFail();
 
@@ -166,15 +159,28 @@ public class AuthService {
             accessToken = jwtUtil.createJwt(email, 1000 * 60 * 15L);
             refreshToken = jwtUtil.createJwt(email, 1000 * 60 * 60 * 24 * 30L);
 
-            //리프레시토큰 저장
-            RefreshToken refreshToken1 = new RefreshToken();
-            refreshToken1.setUser(user);
-            refreshToken1.setRefreshToken(refreshToken);
-            refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-            refreshToken1.setCreatedDate(LocalDateTime.now());
+            Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(user);
 
-            refreshTokenRepository.save(refreshToken1);
+            //리프레시 토큰 새로 발급된 걸로 변경
+            if (optionalToken.isPresent())
+            {
+                RefreshToken originalToken = optionalToken.get();
 
+                originalToken.setRefreshToken(refreshToken);
+                originalToken.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
+                originalToken.setCreatedDate(LocalDateTime.now());
+
+                refreshTokenRepository.save(originalToken);
+            } else {
+                //리프레시토큰 저장
+                RefreshToken refreshToken1 = new RefreshToken();
+                refreshToken1.setUser(user);
+                refreshToken1.setRefreshToken(refreshToken);
+                refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
+                refreshToken1.setCreatedDate(LocalDateTime.now());
+
+                refreshTokenRepository.save(refreshToken1);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
@@ -200,7 +206,7 @@ public class AuthService {
             return ResponseDto.databaseError();
         }
         String email = jwtUtil.getUsername(newAccessToken);
-        User user = userRepository.findByUsername(email);
+        User user = userRepository.findByUsernameAndStatus(email, 1);
 
         Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(user);
         RefreshToken token = optionalToken.get();
