@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import voicelog.voicelog.dto.request.auth.*;
 import voicelog.voicelog.dto.response.ResponseDto;
 import voicelog.voicelog.dto.response.auth.*;
-import voicelog.voicelog.dto.response.main.MainResponseDto;
 import voicelog.voicelog.service.AuthService;
 import lombok.RequiredArgsConstructor;
 
@@ -81,9 +80,9 @@ public class AuthController {
         return response;
     }
 
-    @PostMapping("/old-password-check")
-    public ResponseEntity<? super OldPasswordCheckResponseDto> oldPasswordCheck(
-            @RequestBody @Valid OldPasswordCheckRequestDto requestBody) {
+    @PostMapping("/password-check")
+    public ResponseEntity<? super PasswordCheckResponseDto> passwordCheck(
+            @RequestBody @Valid PasswordCheckRequestDto requestBody) {
         String email = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -98,7 +97,7 @@ public class AuthController {
             return ResponseDto.databaseError();
         }
 
-        ResponseEntity<? super OldPasswordCheckResponseDto> response = authService.oldPasswordCheck(requestBody, email);
+        ResponseEntity<? super PasswordCheckResponseDto> response = authService.oldPasswordCheck(requestBody, email);
         return response;
     }
 

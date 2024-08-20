@@ -2,7 +2,6 @@ package voicelog.voicelog.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import voicelog.voicelog.domain.EmailCertification;
 import voicelog.voicelog.domain.RefreshToken;
@@ -255,7 +254,7 @@ public class AuthService {
     }
 
     //이전 비밀번호 확인
-    public ResponseEntity<? super OldPasswordCheckResponseDto> oldPasswordCheck(OldPasswordCheckRequestDto dto, String email) {
+    public ResponseEntity<? super PasswordCheckResponseDto> oldPasswordCheck(PasswordCheckRequestDto dto, String email) {
         try {
             User user = userRepository.findByUsernameAndStatus(email, 1);
 
@@ -263,14 +262,14 @@ public class AuthService {
             System.out.println("isMatch result: " + isMatched);
             if (!isMatched) {
                 System.out.println("비번 틀림");
-                return OldPasswordCheckResponseDto.wrongPassword();
+                return PasswordCheckResponseDto.wrongPassword();
             } else {
                 System.out.println("비번 맞음");
-                return OldPasswordCheckResponseDto.success();
+                return PasswordCheckResponseDto.success();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return OldPasswordCheckResponseDto.databaseError();
+            return PasswordCheckResponseDto.databaseError();
         }
     }
 
