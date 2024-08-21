@@ -20,4 +20,9 @@ public class PasswordPatchResponseDto extends ResponseDto {
         ResponseDto responseBody = new ResponseDto(ResponseCode.NOT_INVALID_PASSWORD, ResponseMessage.NOT_INVALID_PASSWORD);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
+
+    public static ResponseEntity<ResponseDto> reusedPassword() {
+        ResponseDto responseBody = new ResponseDto(ResponseCode.PASSWORD_REUSE, ResponseMessage.PASSWORD_REUSE);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
+    }
 }

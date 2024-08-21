@@ -253,12 +253,17 @@ public class AuthService {
     //비밀번호 재설정
     public ResponseEntity<? super PasswordPatchResponseDto> passwordPatch(PasswordPatchRequestDto dto, String email) {
 
-        if (!dto.getNewPassword().equals(dto.getCheckNewPassword())) {
-            return PasswordPatchResponseDto.notEqualPassword();
-        }
-
         try{
             User user = userRepository.findByUsernameAndStatus(email, 1);
+
+            if (!dto.getNewPassword().equals(dto.getCheckNewPassword())) {
+                return PasswordPatchResponseDto.notEqualPassword();
+            }
+
+            boolean isMatched = passwordEncoder.matches(dto.getNewPassword(), user.getPassword());
+            if (isMatched) {
+                return PasswordPatchResponseDto.reusedPassword();
+            }
 
             String password = dto.getNewPassword();
             password = passwordEncoder.encode(password);

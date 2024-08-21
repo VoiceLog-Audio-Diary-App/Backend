@@ -11,6 +11,7 @@ public interface ResponseMessage {
     String DUPLICATE_DIARY = "duplicate diary";
     String NOT_EXIST_DIARY = "not exist diary";
     String NOT_INVALID_PASSWORD = "not invalid password";
+    String PASSWORD_REUSE = "reused password";
 
     //HTTP 402
     String COIN_REQUIRED = "not enough coin";
