@@ -3,15 +3,14 @@ package voicelog.voicelog.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import voicelog.voicelog.domain.CustomOAuth2User;
-import voicelog.voicelog.domain.RefreshToken;
 import voicelog.voicelog.domain.User;
-import voicelog.voicelog.repository.RefreshTokenRepository;
 import voicelog.voicelog.repository.UserRepository;
 import voicelog.voicelog.utils.JwtUtil;
 
@@ -19,14 +18,15 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
@@ -49,37 +49,16 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
 
                 userEmail = userEmail + 'N';
                 user = new User(userEmail);
+                userRepository.save(user);
             }
 
             String refreshToken = jwtUtil.createJwt(userEmail, 1000 * 60 * 60 * 24 * 30L);
 
-            if (userRepository.existsByUsername(userEmail)){
-                User existUser = userRepository.findByUsernameAndStatus(userEmail, 1);
-                Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUserId(existUser.getUserId());
+            long expiredTime = 1000L * 60 * 60 * 24 * 30;
+            String redisKey2 = "RefreshToken:" + userEmail;
+            redisTemplate.opsForValue().set(redisKey2, refreshToken, expiredTime, TimeUnit.MILLISECONDS);
 
-                log.info("User with email {} signed in successfully.", userEmail);
-
-                RefreshToken refreshToken1 = optionalToken.get();
-
-                refreshToken1.setRefreshToken(refreshToken);
-                refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-                refreshToken1.setCreatedDate(LocalDateTime.now());
-
-                refreshTokenRepository.save(refreshToken1);
-
-            } else {//네이버 회원가입
-                userRepository.save(user);
-
-                RefreshToken refreshToken1 = new RefreshToken();
-                refreshToken1.setUserId(user.getUserId());
-                refreshToken1.setRefreshToken(refreshToken);
-                refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-                refreshToken1.setCreatedDate(LocalDateTime.now());
-
-                refreshTokenRepository.save(refreshToken1);
-            }
-
-
+            log.info("User with email {} signed in successfully.", userEmail);
 
         } catch (Exception exception) {
             exception.printStackTrace();

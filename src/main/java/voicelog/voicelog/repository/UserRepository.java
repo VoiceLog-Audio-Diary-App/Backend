@@ -1,6 +1,5 @@
 package voicelog.voicelog.repository;
 
-import voicelog.voicelog.domain.RefreshToken;
 import voicelog.voicelog.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

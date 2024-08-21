@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-import voicelog.voicelog.domain.RefreshToken;
-import voicelog.voicelog.repository.RefreshTokenRepository;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -82,5 +80,19 @@ public class JwtUtil {
                 .get("username", String.class);
     }
 
+    //토큰 만료 시간 추출
+    public static Date extractExpiration(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+    }
 
+    //토큰 남은 유효 시간 계산
+    public static long getRemainingExpiration(String token) {
+        Date expirationDate = extractExpiration(token);
+        return (expirationDate.getTime() - System.currentTimeMillis()) / 1000;
+    }
 }

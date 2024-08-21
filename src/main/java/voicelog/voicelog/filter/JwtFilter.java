@@ -57,7 +57,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             // 토큰 추출
-            String token = authorization.split(" ")[1];
+            String token = authorization.substring(7);
             log.info("Parsed token : {}", token);
 
             //블랙리스트에 있는 지 확인
