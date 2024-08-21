@@ -156,7 +156,7 @@ public class AuthService {
             accessToken = jwtUtil.createJwt(email, 1000 * 60 * 15L);
             refreshToken = jwtUtil.createJwt(email, 1000 * 60 * 60 * 24 * 30L);
 
-            Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(user);
+            Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUserId(user.getUserId());
 
             //리프레시 토큰 새로 발급된 걸로 변경
             if (optionalToken.isPresent())
@@ -171,7 +171,7 @@ public class AuthService {
             } else {
                 //리프레시토큰 저장
                 RefreshToken refreshToken1 = new RefreshToken();
-                refreshToken1.setUser(user);
+                refreshToken1.setUserId(user.getUserId());
                 refreshToken1.setRefreshToken(refreshToken);
                 refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
                 refreshToken1.setCreatedDate(LocalDateTime.now());
@@ -205,7 +205,7 @@ public class AuthService {
         String email = jwtUtil.getUsername(newAccessToken);
         User user = userRepository.findByUsernameAndStatus(email, 1);
 
-        Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(user);
+        Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUserId(user.getUserId());
         RefreshToken token = optionalToken.get();
         return RefreshAccessTokenResponseDto.success(newAccessToken, token.getRefreshToken());
     }
@@ -218,7 +218,12 @@ public class AuthService {
 
             //리프레시 토큰 만료 시
             if (token.getExpiredDate().isBefore(LocalDateTime.now())) {
-                User user = token.getUser();
+                Long userId = token.getUserId();
+                var optionalUser = userRepository.findByUserId(userId);
+                if (optionalUser == null)
+                    throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+
+                User user = optionalUser.get();
 
                 String newRefreshToken = jwtUtil.createJwt(user.getUsername(), 1000 * 60 * 60 * 24 * 30L);//30일
                 token.setRefreshToken(newRefreshToken);
@@ -231,7 +236,14 @@ public class AuthService {
                 return newAccessToken;
             } else {
                 //리프레시 토큰 유효 시
-                String newAccessToken = jwtUtil.createJwt(token.getUser().getUsername(), 1000 * 60 * 15L); // 15분
+                Long userId = token.getUserId();
+                var optionalUser = userRepository.findByUserId(userId);
+                if (optionalUser == null)
+                    throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+
+                User user = optionalUser.get();
+
+                String newAccessToken = jwtUtil.createJwt(user.getUsername(), 1000 * 60 * 15L); // 15분
                 return newAccessToken;
             }
         } else {

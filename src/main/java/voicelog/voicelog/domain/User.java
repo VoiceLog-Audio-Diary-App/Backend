@@ -39,9 +39,6 @@ public class User {
     @Column(nullable = false, length = 20)
     private String type;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private RefreshToken refreshToken;
-
     @Column
     private Integer coin;
 

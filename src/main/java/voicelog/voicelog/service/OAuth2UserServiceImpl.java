@@ -55,7 +55,7 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
 
             if (userRepository.existsByUsername(userEmail)){
                 User existUser = userRepository.findByUsernameAndStatus(userEmail, 1);
-                Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(existUser);
+                Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUserId(existUser.getUserId());
 
                 log.info("User with email {} signed in successfully.", userEmail);
 
@@ -66,40 +66,12 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
                 refreshToken1.setCreatedDate(LocalDateTime.now());
 
                 refreshTokenRepository.save(refreshToken1);
-                /*if (existUser.getType() == "naver")
-                {
 
-                }
-                else//자체 로그인 유저 있는 경우
-                {
-                    existUser.setType("naver");
-                    existUser.setUpdated_at(LocalDateTime.now());
-                    userRepository.save(existUser);
-
-                    if (optionalToken.isPresent()) {
-                        RefreshToken refreshToken1 = optionalToken.get();
-
-                        refreshToken1.setRefreshToken(refreshToken);
-                        refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-                        refreshToken1.setCreatedDate(LocalDateTime.now());
-
-                        refreshTokenRepository.save(refreshToken1);
-                    } else {
-                        RefreshToken refreshToken1 = new RefreshToken();
-
-                        refreshToken1.setUser(existUser);
-                        refreshToken1.setRefreshToken(refreshToken);
-                        refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-                        refreshToken1.setCreatedDate(LocalDateTime.now());
-
-                        refreshTokenRepository.save(refreshToken1);
-                    }
-                }*/
             } else {//네이버 회원가입
                 userRepository.save(user);
 
                 RefreshToken refreshToken1 = new RefreshToken();
-                refreshToken1.setUser(user);
+                refreshToken1.setUserId(user.getUserId());
                 refreshToken1.setRefreshToken(refreshToken);
                 refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
                 refreshToken1.setCreatedDate(LocalDateTime.now());

@@ -2,10 +2,12 @@ package voicelog.voicelog.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.time.LocalDateTime;
 
-@Entity
+@RedisHash(value = "RefreshToken", timeToLive = 2592000)
 @Getter
 @Setter
 @Builder
@@ -14,19 +16,15 @@ import java.time.LocalDateTime;
 public class RefreshToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    private User user;
+    @Indexed
+    private Long userId;
 
-    @Column(nullable = false, unique = true)
+    @Indexed
     private String refreshToken;
 
-    @Column(nullable = false)
     private LocalDateTime expiredDate;
 
-    @Column(nullable = false)
     private LocalDateTime createdDate;
 }
