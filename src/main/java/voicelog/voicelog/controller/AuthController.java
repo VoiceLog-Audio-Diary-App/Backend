@@ -1,5 +1,6 @@
 package voicelog.voicelog.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
@@ -119,6 +120,34 @@ public class AuthController {
         }
 
         ResponseEntity<? super PasswordPatchResponseDto> response = authService.passwordPatch(requestBody, email);
+        return response;
+    }
+
+    @PostMapping("/sign-out")
+    public ResponseEntity<? super SignOutResponseDto> signOut(HttpServletRequest request) {
+        String email = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        try {
+            if (authentication != null) {
+                email = authentication.getName();
+            }
+            if (email == null)
+                return ResponseDto.noAuthentication();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        //헤더에서 토큰 가져오기
+        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseDto.noAuthentication();
+        }
+
+        String token = authorizationHeader.substring(7);
+
+        ResponseEntity<? super SignOutResponseDto> response = authService.signOut(token, email);
         return response;
     }
 }

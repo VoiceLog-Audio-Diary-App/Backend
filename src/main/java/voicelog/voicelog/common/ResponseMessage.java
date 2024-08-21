@@ -23,6 +23,9 @@ public interface ResponseMessage {
     //HTTP 403
     String NO_PERMISSION = "Do not have permission.";
 
+    //HTTP 404
+    String NOT_FOUND = "Not Found resource";
+
     //HTTP 500
     String DATABASE_ERROR = "database error";
     String MAIL_FAIL = "mail send failed";

@@ -23,6 +23,9 @@ public interface ResponseCode {
     //HTTP 403
     String NO_PERMISSION = "NP";
 
+    //HTTP 404
+    String NOT_FOUND = "NF";
+
     //HTTP 500
     String DATABASE_ERROR = "DBE";
     String MAIL_FAIL = "MF";
