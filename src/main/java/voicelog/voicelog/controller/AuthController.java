@@ -60,69 +60,6 @@ public class AuthController {
         return response;
     }
 
-    @GetMapping("/social-check")
-    public ResponseEntity<? super SocialUserCheckResponseDto> socialCheck() {
-
-        String email = null;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        try {
-            if (authentication != null) {
-                email = authentication.getName();
-            }
-            if (email == null)
-                return ResponseDto.noAuthentication();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseDto.databaseError();
-        }
-
-        ResponseEntity<? super SocialUserCheckResponseDto> response = authService.socialCheck(email);
-        return response;
-    }
-
-    @PostMapping("/password-check")
-    public ResponseEntity<? super PasswordCheckResponseDto> passwordCheck(
-            @RequestBody @Valid PasswordCheckRequestDto requestBody) {
-        String email = null;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        try {
-            if (authentication != null) {
-                email = authentication.getName();
-            }
-            if (email == null)
-                return ResponseDto.noAuthentication();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseDto.databaseError();
-        }
-
-        ResponseEntity<? super PasswordCheckResponseDto> response = authService.oldPasswordCheck(requestBody, email);
-        return response;
-    }
-
-    @PatchMapping("/password-patch")
-    public ResponseEntity<? super PasswordPatchResponseDto> passwordPatch(
-            @RequestBody @Valid PasswordPatchRequestDto requestBody) {
-        String email = null;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        try {
-            if (authentication != null) {
-                email = authentication.getName();
-            }
-            if (email == null)
-                return ResponseDto.noAuthentication();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseDto.databaseError();
-        }
-
-        ResponseEntity<? super PasswordPatchResponseDto> response = authService.passwordPatch(requestBody, email);
-        return response;
-    }
-
     @PostMapping("/sign-out")
     public ResponseEntity<? super SignOutResponseDto> signOut(HttpServletRequest request) {
         String email = null;
