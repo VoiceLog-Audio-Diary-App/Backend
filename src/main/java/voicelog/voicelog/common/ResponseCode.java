@@ -12,6 +12,7 @@ public interface ResponseCode {
     String NOT_EXIST_DIARY = "NED";
     String NOT_INVALID_PASSWORD = "NIP";
     String PASSWORD_REUSE = "PR";
+    String NOT_EXIST_USER = "NEU";
 
     //HTTP 401
     String SIGN_IN_FAIL = "SF";
