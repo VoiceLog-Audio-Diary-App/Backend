@@ -7,24 +7,26 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import voicelog.voicelog.domain.User;
-import voicelog.voicelog.dto.request.auth.PasswordCheckRequestDto;
-import voicelog.voicelog.dto.request.auth.PasswordPatchRequestDto;
-import voicelog.voicelog.dto.response.auth.PasswordCheckResponseDto;
-import voicelog.voicelog.dto.response.auth.PasswordPatchResponseDto;
-import voicelog.voicelog.dto.response.auth.SocialUserCheckResponseDto;
-import voicelog.voicelog.provider.EmailProvider;
-import voicelog.voicelog.repository.EmailCertificationRepository;
+import voicelog.voicelog.dto.request.mypage.PasswordCheckRequestDto;
+import voicelog.voicelog.dto.request.mypage.PasswordPatchRequestDto;
+import voicelog.voicelog.dto.response.auth.SignOutResponseDto;
+import voicelog.voicelog.dto.response.mypage.DeleteUserResponseDto;
+import voicelog.voicelog.dto.response.mypage.PasswordCheckResponseDto;
+import voicelog.voicelog.dto.response.mypage.PasswordPatchResponseDto;
+import voicelog.voicelog.dto.response.mypage.SocialUserCheckResponseDto;
 import voicelog.voicelog.repository.UserRepository;
 import voicelog.voicelog.utils.JwtUtil;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
+    private final JwtUtil jwtUtil;
+    private final RedisTemplate<String, String> redisTemplate;
     //네이버 여부 확인
     public ResponseEntity<? super SocialUserCheckResponseDto> socialCheck(String email) {
         try {
@@ -85,5 +87,30 @@ public class MyPageService {
             return PasswordPatchResponseDto.databaseError();
         }
         return PasswordPatchResponseDto.success();
+    }
+
+    public ResponseEntity<? super DeleteUserResponseDto> deleteUser(String token, String email) {
+        try {
+            //유저 탈퇴상태로 변경
+            User user = userRepository.findByUsernameAndStatus(email, 1);
+            if (user == null || user.getStatus() == 0)
+                return DeleteUserResponseDto.notExistUser();
+            user.setStatus(0);
+            user.setUpdated_at(LocalDateTime.now());
+            userRepository.save(user);
+
+            //액세스 토큰 블랙리스트에 추가
+            long remainingTime = jwtUtil.getRemainingExpiration(token);
+            String redisKey = "Blacklist:" + token;
+            redisTemplate.opsForValue().set(redisKey, "blacklisted", remainingTime, TimeUnit.SECONDS);
+
+            //리프레시 토큰 삭제
+            String redisKey2 = "RefreshToken:" + email;
+            redisTemplate.delete(redisKey2);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return DeleteUserResponseDto.databaseError();
+        }
+        return DeleteUserResponseDto.success();
     }
 }
