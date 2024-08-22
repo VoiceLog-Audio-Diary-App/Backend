@@ -1,4 +1,4 @@
-package voicelog.voicelog.dto.response.auth;
+package voicelog.voicelog.dto.response.mypage;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
