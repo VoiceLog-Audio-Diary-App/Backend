@@ -53,7 +53,7 @@ public class AuthService {
             String email = dto.getEmail();
             String certificationNumber = dto.getCertificationNumber();
 
-            boolean isExist = userRepository.existsByUsername(email);
+            boolean isExist = userRepository.existsByUsernameAndStatus(email, 1);
             if (isExist)
                 return SignUpResponseDto.duplicatedEmail();
 
@@ -82,7 +82,7 @@ public class AuthService {
     public ResponseEntity<? super EmailCheckResponseDto> emailCheck(EmailCheckRequestDto dto) {
         try {
             String email = dto.getEmail();
-            boolean isExist = userRepository.existsByUsername(email);
+            boolean isExist = userRepository.existsByUsernameAndStatus(email, 1);
             if (isExist)
                 return EmailCheckResponseDto.duplicatedEmail();
         } catch (Exception e) {
@@ -97,7 +97,7 @@ public class AuthService {
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(EmailCertificationRequestDto dto) {
         try {
             String email = dto.getEmail();
-            boolean isExist = userRepository.existsByUsername(email);
+            boolean isExist = userRepository.existsByUsernameAndStatus(email, 1);
             if (isExist)
                 return EmailCheckResponseDto.duplicatedEmail();
 
