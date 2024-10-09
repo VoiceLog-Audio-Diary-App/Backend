@@ -1,16 +1,17 @@
 package voicelog.voicelog.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import voicelog.voicelog.domain.EmailCertification;
-import voicelog.voicelog.domain.RefreshToken;
 import voicelog.voicelog.dto.request.auth.*;
 import voicelog.voicelog.dto.response.*;
 import voicelog.voicelog.dto.response.auth.*;
 import voicelog.voicelog.provider.EmailProvider;
 import voicelog.voicelog.repository.EmailCertificationRepository;
-import voicelog.voicelog.repository.RefreshTokenRepository;
 import voicelog.voicelog.repository.UserRepository;
 import voicelog.voicelog.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -22,22 +23,21 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    private final JavaMailSender javaMailSender;
-    private static final String senderEmail= "lsj90954511@gmail.com";
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private final EmailProvider emailProvider;
     private final EmailCertificationRepository emailCertificationRepository;
 
     private final JwtUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     // 6자리 인증코드 생성
     private String generateValidationCode() {
@@ -53,7 +53,7 @@ public class AuthService {
             String email = dto.getEmail();
             String certificationNumber = dto.getCertificationNumber();
 
-            boolean isExist = userRepository.existsByUsername(email);
+            boolean isExist = userRepository.existsByUsernameAndStatus(email, 1);
             if (isExist)
                 return SignUpResponseDto.duplicatedEmail();
 
@@ -82,7 +82,7 @@ public class AuthService {
     public ResponseEntity<? super EmailCheckResponseDto> emailCheck(EmailCheckRequestDto dto) {
         try {
             String email = dto.getEmail();
-            boolean isExist = userRepository.existsByUsername(email);
+            boolean isExist = userRepository.existsByUsernameAndStatus(email, 1);
             if (isExist)
                 return EmailCheckResponseDto.duplicatedEmail();
         } catch (Exception e) {
@@ -97,7 +97,7 @@ public class AuthService {
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(EmailCertificationRequestDto dto) {
         try {
             String email = dto.getEmail();
-            boolean isExist = userRepository.existsByUsername(email);
+            boolean isExist = userRepository.existsByUsernameAndStatus(email, 1);
             if (isExist)
                 return EmailCheckResponseDto.duplicatedEmail();
 
@@ -159,28 +159,10 @@ public class AuthService {
             accessToken = jwtUtil.createJwt(email, 1000 * 60 * 15L);
             refreshToken = jwtUtil.createJwt(email, 1000 * 60 * 60 * 24 * 30L);
 
-            Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(user);
-
-            //리프레시 토큰 새로 발급된 걸로 변경
-            if (optionalToken.isPresent())
-            {
-                RefreshToken originalToken = optionalToken.get();
-
-                originalToken.setRefreshToken(refreshToken);
-                originalToken.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-                originalToken.setCreatedDate(LocalDateTime.now());
-
-                refreshTokenRepository.save(originalToken);
-            } else {
-                //리프레시토큰 저장
-                RefreshToken refreshToken1 = new RefreshToken();
-                refreshToken1.setUser(user);
-                refreshToken1.setRefreshToken(refreshToken);
-                refreshToken1.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-                refreshToken1.setCreatedDate(LocalDateTime.now());
-
-                refreshTokenRepository.save(refreshToken1);
-            }
+            //리프레시토큰 저장/갱신
+            long expiredTime = 1000L * 60 * 60 * 24 * 30;
+            String redisKey = "RefreshToken:" + email;
+            redisTemplate.opsForValue().set(redisKey, refreshToken, expiredTime, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
@@ -195,9 +177,8 @@ public class AuthService {
         String newAccessToken = null;
 
         try {
-            String refreshToken = dto.getRefreshToken();
 
-            newAccessToken = refreshAccessToken(refreshToken);
+            newAccessToken = refreshAccessToken(dto.getEmail());
 
             if (newAccessToken == null)
                 return RefreshAccessTokenResponseDto.refreshFail();
@@ -205,41 +186,50 @@ public class AuthService {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
-        String email = jwtUtil.getUsername(newAccessToken);
-        User user = userRepository.findByUsernameAndStatus(email, 1);
+        String email = dto.getEmail();
 
-        Optional<RefreshToken> optionalToken = refreshTokenRepository.findByUser(user);
-        RefreshToken token = optionalToken.get();
-        return RefreshAccessTokenResponseDto.success(newAccessToken, token.getRefreshToken());
+        String redisKey = "RefreshToken:" + email;
+        String refreshToken = redisTemplate.opsForValue().get(redisKey);
+
+        return RefreshAccessTokenResponseDto.success(newAccessToken, refreshToken);
     }
 
-    public String refreshAccessToken(String refreshToken) {
-        Optional<RefreshToken> optionalToken = refreshTokenRepository.findByRefreshToken(refreshToken);
+    public String refreshAccessToken(String email) {
 
-        if (optionalToken.isPresent()) {
-            RefreshToken token = optionalToken.get();
+        String redisKey = "RefreshToken:" + email;
+        String refreshToken = redisTemplate.opsForValue().get(redisKey);
 
-            //리프레시 토큰 만료 시
-            if (token.getExpiredDate().isBefore(LocalDateTime.now())) {
-                User user = token.getUser();
-
-                String newRefreshToken = jwtUtil.createJwt(user.getUsername(), 1000 * 60 * 60 * 24 * 30L);//30일
-                token.setRefreshToken(newRefreshToken);
-                token.setExpiredDate(LocalDateTime.now().plus(1000 * 60 * 60 * 24 * 30L, ChronoUnit.MILLIS));
-                token.setCreatedDate(LocalDateTime.now());
-
-                refreshTokenRepository.save(token);
-
-                String newAccessToken = jwtUtil.createJwt(user.getUsername(), 1000 * 60 * 15L); // 15분
-                return newAccessToken;
-            } else {
-                //리프레시 토큰 유효 시
-                String newAccessToken = jwtUtil.createJwt(token.getUser().getUsername(), 1000 * 60 * 15L); // 15분
-                return newAccessToken;
-            }
+        //리프레시 토큰 유효시
+        if (refreshToken != null) {
+            String newAccessToken = jwtUtil.createJwt(email, 1000 * 60 * 15L); // 15분
+            return newAccessToken;
         } else {
-            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+            //리프레시토큰 생성
+            String newRefreshToken = jwtUtil.createJwt(email, 1000 * 60 * 60 * 24 * 30L);
+
+            long expiredTime = 1000L * 60 * 60 * 24 * 30;
+            String redisKey2 = "RefreshToken:" + email;
+            redisTemplate.opsForValue().set(redisKey2, newRefreshToken, expiredTime, TimeUnit.MILLISECONDS);
+
+            String newAccessToken = jwtUtil.createJwt(email, 1000 * 60 * 15L); // 15분
+            return newAccessToken;
         }
     }
 
+    public ResponseEntity<? super SignOutResponseDto> signOut(String token, String email) {
+        try {
+            //액세스 토큰 블랙리스트에 추가
+            long remainingTime = jwtUtil.getRemainingExpiration(token);
+            String redisKey = "Blacklist:" + token;
+            redisTemplate.opsForValue().set(redisKey, "blacklisted", remainingTime, TimeUnit.SECONDS);
+
+            //리프레시 토큰 삭제
+            String redisKey2 = "RefreshToken:" + email;
+            redisTemplate.delete(redisKey2);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return SignOutResponseDto.databaseError();
+        }
+        return SignOutResponseDto.success();
+    }
 }

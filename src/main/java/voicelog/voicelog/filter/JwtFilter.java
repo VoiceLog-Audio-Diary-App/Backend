@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,6 +20,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import voicelog.voicelog.config.RedisTemplateConfig;
 import voicelog.voicelog.service.AuthService;
 import voicelog.voicelog.utils.JwtUtil;
 
@@ -30,6 +33,8 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final RedisTemplate<String, String> redisTemplate;
+    private static final String BLACKLIST_PREFIX = "Blacklist:";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -52,8 +57,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             // 토큰 추출
-            String token = authorization.split(" ")[1];
+            String token = authorization.substring(7);
             log.info("Parsed token : {}", token);
+
+            //블랙리스트에 있는 지 확인
+            String redisKey = BLACKLIST_PREFIX + token;
+            Boolean isBlacklisted = redisTemplate.hasKey(redisKey);
+            if (Boolean.TRUE.equals(isBlacklisted)) {
+                log.error("Token is blacklisted");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is blacklisted.");
+                return;
+            }
 
             // 토큰 만료 여부 확인
             if (JwtUtil.isExpired(token)) {

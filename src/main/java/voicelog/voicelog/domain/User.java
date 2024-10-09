@@ -19,7 +19,7 @@ public class User {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(length = 50, nullable = false, unique = true)
+    @Column(length = 50, nullable = false, unique = false)
     private String username;
 
     @Column(nullable = true)
@@ -38,9 +38,6 @@ public class User {
 
     @Column(nullable = false, length = 20)
     private String type;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private RefreshToken refreshToken;
 
     @Column
     private Integer coin;

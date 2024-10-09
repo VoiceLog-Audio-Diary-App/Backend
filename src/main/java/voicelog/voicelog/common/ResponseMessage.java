@@ -10,6 +10,9 @@ public interface ResponseMessage {
     String INVALID_FILE = "invalid file";
     String DUPLICATE_DIARY = "duplicate diary";
     String NOT_EXIST_DIARY = "not exist diary";
+    String NOT_INVALID_PASSWORD = "not invalid password";
+    String PASSWORD_REUSE = "reused password";
+    String NOT_EXIST_USER = "not exist user";
 
     //HTTP 402
     String COIN_REQUIRED = "not enough coin";
@@ -21,6 +24,9 @@ public interface ResponseMessage {
 
     //HTTP 403
     String NO_PERMISSION = "Do not have permission.";
+
+    //HTTP 404
+    String NOT_FOUND = "Not Found resource";
 
     //HTTP 500
     String DATABASE_ERROR = "database error";

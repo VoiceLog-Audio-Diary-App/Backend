@@ -10,6 +10,9 @@ public interface ResponseCode {
     String INVALID_FILE = "IF";
     String DUPLICATE_DIARY = "DD";
     String NOT_EXIST_DIARY = "NED";
+    String NOT_INVALID_PASSWORD = "NIP";
+    String PASSWORD_REUSE = "PR";
+    String NOT_EXIST_USER = "NEU";
 
     //HTTP 401
     String SIGN_IN_FAIL = "SF";
@@ -21,6 +24,9 @@ public interface ResponseCode {
 
     //HTTP 403
     String NO_PERMISSION = "NP";
+
+    //HTTP 404
+    String NOT_FOUND = "NF";
 
     //HTTP 500
     String DATABASE_ERROR = "DBE";

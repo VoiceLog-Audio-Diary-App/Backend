@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class RefreshAccessTokenRequestDto {
-    private String refreshToken;
+    private String email;
 }
