@@ -87,4 +87,11 @@ public class AuthController {
         ResponseEntity<? super SignOutResponseDto> response = authService.signOut(token, email);
         return response;
     }
+
+    @PostMapping("/oauth2")
+    public ResponseEntity<? super OAuth2ResponseDto> oAuth2(
+            @RequestBody OAuth2RequestDto requestBody) {
+        ResponseEntity<? super OAuth2ResponseDto> response = authService.oAuth2(requestBody);
+        return response;
+    }
 }

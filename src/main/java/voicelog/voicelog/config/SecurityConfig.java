@@ -73,7 +73,6 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(request -> request
                     .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers("/login/oauth2/code/kakao").permitAll()
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth ->

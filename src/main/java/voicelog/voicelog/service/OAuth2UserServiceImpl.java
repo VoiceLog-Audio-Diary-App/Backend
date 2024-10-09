@@ -24,45 +24,45 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
-    private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
-    private final RedisTemplate<String, String> redisTemplate;
-
-    @Override
-    public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
-        OAuth2User oAuth2User = super.loadUser(request);
-        String oauthClientName = request.getClientRegistration().getClientName();
-
-        User user = null;
-        String userEmail = null;
-
-        try {
-            log.info(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
-
-            if (oauthClientName.equals("naver")) {
-                Map<String, String> responseMap = (Map<String, String>) oAuth2User.getAttributes().get("response");
-                userEmail = responseMap.get("email");
-
-                if (userEmail == null) {
-                    throw new OAuth2AuthenticationException("Email not found in OAuth2 response");
-                }
-
-                userEmail = userEmail + 'N';
-                user = new User(userEmail);
-                userRepository.save(user);
-            }
-
-            String refreshToken = jwtUtil.createJwt(userEmail, 1000 * 60 * 60 * 24 * 30L);
-
-            long expiredTime = 1000L * 60 * 60 * 24 * 30;
-            String redisKey2 = "RefreshToken:" + userEmail;
-            redisTemplate.opsForValue().set(redisKey2, refreshToken, expiredTime, TimeUnit.MILLISECONDS);
-
-            log.info("User with email {} signed in successfully.", userEmail);
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        return new CustomOAuth2User(userEmail);
-    }
+//    private final UserRepository userRepository;
+//    private final JwtUtil jwtUtil;
+//    private final RedisTemplate<String, String> redisTemplate;
+//
+//    @Override
+//    public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
+//        OAuth2User oAuth2User = super.loadUser(request);
+//        String oauthClientName = request.getClientRegistration().getClientName();
+//
+//        User user = null;
+//        String userEmail = null;
+//
+//        try {
+//            log.info(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
+//
+//            if (oauthClientName.equals("naver")) {
+//                Map<String, String> responseMap = (Map<String, String>) oAuth2User.getAttributes().get("response");
+//                userEmail = responseMap.get("email");
+//
+//                if (userEmail == null) {
+//                    throw new OAuth2AuthenticationException("Email not found in OAuth2 response");
+//                }
+//
+//                userEmail = userEmail + 'N';
+//                user = new User(userEmail);
+//                userRepository.save(user);
+//            }
+//
+//            String refreshToken = jwtUtil.createJwt(userEmail, 1000 * 60 * 60 * 24 * 30L);
+//
+//            long expiredTime = 1000L * 60 * 60 * 24 * 30;
+//            String redisKey2 = "RefreshToken:" + userEmail;
+//            redisTemplate.opsForValue().set(redisKey2, refreshToken, expiredTime, TimeUnit.MILLISECONDS);
+//
+//            log.info("User with email {} signed in successfully.", userEmail);
+//
+//        } catch (Exception exception) {
+//            exception.printStackTrace();
+//        }
+//        return new CustomOAuth2User(userEmail);
+//    }
 }
