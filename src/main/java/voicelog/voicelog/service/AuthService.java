@@ -110,9 +110,6 @@ public class AuthService {
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(EmailCertificationRequestDto dto) {
         try {
             String email = dto.getEmail();
-            boolean isExist = userRepository.existsByUsernameAndStatus(email, 1);
-            if (isExist)
-                return EmailCheckResponseDto.duplicatedEmail();
 
             String certificationNumber = generateValidationCode();
 
