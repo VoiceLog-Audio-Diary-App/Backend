@@ -53,7 +53,7 @@ public class AuthController {
         return response;
     }
 
-    @PostMapping("/refreshAccessToken")
+    @PostMapping("/refresh-accesstoken")
     public ResponseEntity<? super RefreshAccessTokenResponseDto> refreshAccessToken(
             @RequestBody @Valid RefreshAccessTokenRequestDto requestBody) {
         ResponseEntity<? super RefreshAccessTokenResponseDto> response = authService.refreshAccessToken(requestBody);
