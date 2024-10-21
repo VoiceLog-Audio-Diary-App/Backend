@@ -31,7 +31,7 @@ public class NaverCloudClient {
                 .build();
     }
 
-    public String soundToText(File file) {
+    public String speechToText(File file) {
         try {
             byte[] fileContent = Files.readAllBytes(file.toPath());
             String language = "Kor";

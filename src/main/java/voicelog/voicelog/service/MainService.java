@@ -1,10 +1,6 @@
 package voicelog.voicelog.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,10 +17,6 @@ import voicelog.voicelog.repository.UserRepository;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -60,7 +52,7 @@ public class MainService {
             fos.write(file.getBytes());
             fos.close();
 
-            text = naverCloudClient.soundToText(convFile);
+            text = naverCloudClient.speechToText(convFile);
         } catch (Exception e) {
             e.printStackTrace();
             return TranscriptionResponseDto.invalidFile();
